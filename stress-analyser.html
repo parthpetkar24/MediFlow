@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stress Analyzer | MediFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .assessment-option {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .assessment-option:hover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .assessment-option.active {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+            box-shadow: 0 0 0 1px #2563eb;
+        }
+    </style>
+</head>
+<body class="bg-[#f1f7ff]">
+
+    <!-- NAVIGATION BAR -->
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-blue-100">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl font-bold text-blue-700">MediFlow</span>
+            </div>
+            <div class="hidden lg:flex space-x-8">
+                <a href="index.html" class="nav-link">Dashboard</a>
+                <a href="skin-detection.html" class="nav-link">Skin Detection</a>
+                <a href="stress-analyzer.html" class="nav-link active font-bold text-blue-600 underline decoration-2 underline-offset-8">Stress Analyzer</a>
+                <a href="disease-predictor.html" class="nav-link">Disease Predictor</a>
+                <a href="health-tips.html" class="nav-link">Health Tips</a>
+                <a href="about.html" class="nav-link">About</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <i class="fas fa-user-circle text-gray-400 text-xl"></i>
+                <button class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold text-sm">Get Started</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENT -->
+    <main class="max-w-7xl mx-auto px-6 py-16">
+        
+        <!-- INTRO SECTION -->
+        <div class="grid lg:grid-cols-2 gap-16 items-center mb-24">
+            <div>
+                <span class="bg-orange-100 text-orange-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-4 inline-block">Mental Wellness Module</span>
+                <h1 class="text-5xl font-extrabold text-[#0f172a] mb-6 leading-tight">Quantify Your <br><span class="text-blue-600">Mental Performance</span></h1>
+                <p class="text-gray-500 text-lg leading-relaxed mb-8">
+                    Stress isn't just a feeling—it's a physiological state. Our AI analyzes your behavioral patterns and self-reported biometrics to determine your current cortisol risk levels.
+                </p>
+                <div class="flex items-center gap-6">
+                    <div class="flex -space-x-3">
+                        <div class="w-10 h-10 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-bold">JD</div>
+                        <div class="w-10 h-10 rounded-full border-2 border-white bg-blue-100 flex items-center justify-center text-[10px] font-bold text-blue-600">AI</div>
+                        <div class="w-10 h-10 rounded-full border-2 border-white bg-slate-300 flex items-center justify-center text-white"><i class="fas fa-plus text-[8px]"></i></div>
+                    </div>
+                    <p class="text-xs text-gray-400">Used by <span class="text-slate-900 font-bold">2,400+ users</span> today for mental health tracking.</p>
+                </div>
+            </div>
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-blue-50">
+                <div class="flex justify-between items-center mb-10">
+                    <h3 class="font-bold text-slate-800">Stress Level Radar</h3>
+                    <span class="text-[10px] bg-green-100 text-green-600 px-2 py-1 rounded font-bold">LIVE SESSION</span>
+                </div>
+                <!-- Visual Placeholder for a chart/radar -->
+                <div class="aspect-square bg-slate-50 rounded-full border-8 border-white shadow-inner flex items-center justify-center relative">
+                    <div class="text-center">
+                        <span class="text-4xl font-black text-slate-800">42%</span>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Baseline</p>
+                    </div>
+                    <div class="absolute top-10 right-10 w-4 h-4 bg-orange-400 rounded-full animate-ping"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ASSESSMENT INTERFACE -->
+        <section class="bg-white rounded-[3rem] p-12 shadow-sm border border-blue-50">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Quick Assessment</h2>
+                    <p class="text-gray-500 italic">Select the cards that best describe your last 24 hours</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6 mb-12">
+                    <!-- Question 1 -->
+                    <div class="p-6 border border-slate-100 rounded-2xl assessment-option">
+                        <div class="flex justify-between items-start mb-4">
+                            <i class="fas fa-moon text-blue-600"></i>
+                            <span class="text-[10px] text-gray-300">Question 1</span>
+                        </div>
+                        <h4 class="font-bold text-slate-800 mb-2">Sleep Quality</h4>
+                        <p class="text-xs text-gray-400">Did you wake up feeling rested or exhausted?</p>
+                    </div>
+
+                    <!-- Question 2 -->
+                    <div class="p-6 border border-slate-100 rounded-2xl assessment-option active">
+                        <div class="flex justify-between items-start mb-4">
+                            <i class="fas fa-brain text-blue-600"></i>
+                            <span class="text-[10px] text-gray-300">Question 2</span>
+                        </div>
+                        <h4 class="font-bold text-slate-800 mb-2">Cognitive Load</h4>
+                        <p class="text-xs text-gray-400">Difficulty focusing or "brain fog" experienced today?</p>
+                    </div>
+
+                    <!-- Question 3 -->
+                    <div class="p-6 border border-slate-100 rounded-2xl assessment-option">
+                        <div class="flex justify-between items-start mb-4">
+                            <i class="fas fa-heart-pulse text-blue-600"></i>
+                            <span class="text-[10px] text-gray-300">Question 3</span>
+                        </div>
+                        <h4 class="font-bold text-slate-800 mb-2">Physical Tension</h4>
+                        <p class="text-xs text-gray-400">Tightness in shoulders, neck, or jaw?</p>
+                    </div>
+
+                    <!-- Question 4 -->
+                    <div class="p-6 border border-slate-100 rounded-2xl assessment-option active">
+                        <div class="flex justify-between items-start mb-4">
+                            <i class="fas fa-bolt-lightning text-blue-600"></i>
+                            <span class="text-[10px] text-gray-300">Question 4</span>
+                        </div>
+                        <h4 class="font-bold text-slate-800 mb-2">Irritability</h4>
+                        <p class="text-xs text-gray-400">Lower patience levels than usual with minor tasks?</p>
+                    </div>
+                </div>
+
+                <button class="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold hover:bg-slate-800 transition shadow-xl shadow-slate-200">
+                    Analyze Mental Exhaustion &rarr;
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="max-w-7xl mx-auto px-6 py-12 border-t border-slate-200 flex flex-col md:flex-row justify-between items-start gap-10">
+        <div>
+            <h3 class="text-blue-700 font-bold mb-4">MediFlow AI Health</h3>
+            <p class="text-xs text-gray-400 max-w-sm leading-relaxed">
+                &copy; 2024 MediFlow AI Health. All rights reserved. Medical Disclaimer: This system provides AI-driven awareness and is not a substitute for professional medical advice.
+            </p>
+        </div>
+        <div class="grid grid-cols-2 gap-20">
+            <div>
+                <a href="#" class="block text-xs text-gray-400 mb-2 hover:text-blue-600">Privacy Policy</a>
+                <a href="#" class="block text-xs text-gray-400 hover:text-blue-600">Terms of Service</a>
+            </div>
+            <div>
+                <a href="#" class="block text-xs text-gray-400 mb-2 hover:text-blue-600">Contact Support</a>
+                <a href="#" class="block text-xs text-gray-400 hover:text-blue-600">Medical Data Safety</a>
+            </div>
+        </div>
+    </footer>
+
+
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediFlow | Smart Health Awareness</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-[#f1f7ff]">
+
+    <!-- NAVIGATION BAR -->
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-blue-100">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl font-bold text-blue-700">MediFlow</span>
+            </div>
+            <div class="hidden lg:flex space-x-8">
+                <a href="index.html" class="nav-link active">Dashboard</a>
+                <a href="skin-detection.html" class="nav-link">Skin Detection</a>
+                <a href="stress-analyser.html" class="nav-link">Stress Analyzer</a>
+                <a href="disease-predictor.html" class="nav-link">Disease Predictor</a>
+                <a href="health-tips.html" class="nav-link">Health Tips</a>
+                <a href="about.html" class="nav-link">About</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="signup.html">
+                <i class="fas fa-user-circle text-gray-400 text-xl cursor-pointer hover:text-blue-600 transition"></i>
+                <a href="get-started.html" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold text-sm hover:bg-blue-700 transition">
+    Get Started
+</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="max-w-7xl mx-auto py-16 px-6 grid lg:grid-cols-2 gap-12 items-center">
+        <div>
+            <span class="inline-block bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full mb-6 uppercase tracking-wider">AI-Powered Preventative Care</span>
+            <h1 class="text-6xl font-extrabold text-[#0f172a] leading-tight mb-6">
+                Smart Health <br><span class="text-blue-600">Starts Here</span>
+            </h1>
+            <p class="text-gray-500 text-lg leading-relaxed mb-10 max-w-lg">
+                MediFlow leverages advanced neural networks to provide early awareness of potential health issues. From skin analysis to stress tracking, your clinical-grade wellness companion is now digital.
+            </p>
+            <div class="flex items-center gap-4">
+                <button class="bg-blue-600 text-white px-8 py-4 rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition">Get Started</button>
+                <button class="text-blue-700 font-bold px-8 py-4 hover:underline">Learn More</button>
+            </div>
+        </div>
+        <div class="relative">
+            <!-- Simulated Medical Graphic Image from first screenshot -->
+            <div class="bg-[#1e293b] rounded-[2.5rem] p-8 aspect-video flex items-center justify-center shadow-2xl relative overflow-hidden">
+                <div class="relative z-10 w-full">
+                    <svg viewBox="0 0 400 200" class="w-full stroke-blue-400 fill-none stroke-2">
+                        <path d="M0 100 L40 100 L50 60 L70 140 L80 100 L120 100 L130 40 L150 160 L160 100 L300 100" />
+                    </svg>
+                    <div class="absolute bottom-[-20px] right-4 bg-teal-400/20 p-4 rounded-full border border-teal-400/50">
+                        <i class="fas fa-heart text-teal-400 text-3xl"></i>
+                    </div>
+                </div>
+                <!-- Card Background decoration -->
+                <div class="absolute inset-0 border-[1px] border-white/10 m-4 rounded-[2rem]"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRECISION INTELLIGENCE SECTION -->
+    <section class="max-w-7xl mx-auto py-20 px-6">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-bold text-[#0f172a] mb-4">Precision Intelligence</h2>
+            <p class="text-gray-500 max-w-2xl mx-auto">Three core pillars of our health awareness engine, designed for accuracy and ease of use.</p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Card 1 -->
+            <div class="feature-card">
+                <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-6">
+                    <i class="fas fa-microscope text-lg"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Skin Disease Detection</h3>
+                <p class="text-gray-400 text-sm leading-relaxed mb-6">Analyze moles, rashes, and irregularities using world-class computer vision trained on millions of samples.</p>
+                <a href="skin-detection.html" class="text-blue-600 font-bold text-sm hover:underline">Try Analysis &rarr;</a>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="feature-card">
+                <div class="w-10 h-10 bg-orange-50 text-orange-600 rounded-lg flex items-center justify-center mb-6">
+                    <i class="fas fa-brain text-lg"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Stress Analyzer</h3>
+                <p class="text-gray-400 text-sm leading-relaxed mb-6">Quantify your mental fatigue and cortisol indicators through biometric patterns and behavioral analysis.</p>
+                <a href="stress-analyser.html" class="text-orange-600 font-bold text-sm hover:underline">Check Stress &rarr;</a>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="feature-card">
+                <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center mb-6">
+                    <i class="fas fa-notes-medical text-lg"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3">Disease Predictor</h3>
+                <p class="text-gray-400 text-sm leading-relaxed mb-6">Input your lifestyle data to receive a probabilistic overview of potential health risks before they become issues.</p>
+                <a href="disease-predictor.html" class="text-indigo-600 font-bold text-sm hover:underline">Predict Now &rarr;</a>
+            </div>
+        </div>
+    </section>
+    <!-- FOOTER -->
+    <footer class="max-w-7xl mx-auto px-6 py-12 border-t border-slate-200 flex flex-col md:flex-row justify-between items-start gap-10">
+        <div>
+            <h3 class="text-blue-700 font-bold mb-4">MediFlow AI Health</h3>
+            <p class="text-xs text-gray-400 max-w-sm leading-relaxed">
+                &copy; 2024 MediFlow AI Health. All rights reserved. Medical Disclaimer: This system provides AI-driven awareness and is not a substitute for professional medical advice.
+            </p>
+        </div>
+        <div class="grid grid-cols-2 gap-20">
+            <div>
+                <a href="#" class="block text-xs text-gray-400 mb-2 hover:text-blue-600">Privacy Policy</a>
+                <a href="#" class="block text-xs text-gray-400 hover:text-blue-600">Terms of Service</a>
+            </div>
+            <div>
+                <a href="#" class="block text-xs text-gray-400 mb-2 hover:text-blue-600">Contact Support</a>
+                <a href="#" class="block text-xs text-gray-400 hover:text-blue-600">Medical Data Safety</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

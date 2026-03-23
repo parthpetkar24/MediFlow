@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* 1. Global Background Styles */
+body, html {
+    font-family: 'Inter', sans-serif;
+    background-color: #e0f2fe !important; /* Light blue background */
+    margin: 0;
+    padding: 0;
+}
+
+/* 2. Force background on all sections to handle the "white" areas in your image */
+section, .medical-gradient, #tools {
+    background-color: #e0f2fe !important;
+}
+
+/* 3. Navigation Bar */
+nav {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.nav-link {
+    color: #4b5563;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: color 0.2s;
+    text-decoration: none;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: #2563eb;
+}
+
+/* 4. Tool/Feature Cards (Must stay white to look like your image) */
+.feature-card {
+    background-color: #ffffff !important;
+    padding: 2rem;
+    border-radius: 1rem;
+    border: 1px solid #dbeafe;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+}
+
+/* 5. Health Tip Cards */
+.health-tip-card {
+    background-color: #ffffff !important;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid #dbeafe;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    transition: box-shadow 0.2s;
+}
+
+.health-tip-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.tip-number {
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: #eff6ff;
+    color: #2563eb;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}

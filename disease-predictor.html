@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disease Predictor | MediFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .symptom-card {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        .symptom-card.selected {
+            border-color: #2563eb;
+            background-color: #f8fbff !important;
+        }
+        .symptom-card.selected .icon-box {
+            background-color: #2563eb !important;
+            color: white !important;
+        }
+    </style>
+</head>
+<body class="bg-[#f1f7ff]">
+
+    <!-- NAVIGATION -->
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-blue-100">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl font-bold text-blue-700">MediFlow</span>
+            </div>
+            <div class="hidden lg:flex space-x-8">
+                <a href="index.html" class="nav-link">Dashboard</a>
+                <a href="skin-detection.html" class="nav-link">Skin Detection</a>
+                <a href="stress-analyzer.html" class="nav-link">Stress Analyzer</a>
+                <a href="disease-predictor.html" class="nav-link active font-bold text-blue-600 underline decoration-2 underline-offset-8">Disease Predictor</a>
+                <a href="health-tips.html" class="nav-link">Health Tips</a>
+                <a href="about.html" class="nav-link">About</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <i class="fas fa-user-circle text-gray-400 text-xl"></i>
+                <button class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold text-sm">Get Started</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HEADER SECTION -->
+    <header class="max-w-4xl mx-auto text-center py-12">
+        <h1 class="text-5xl font-extrabold text-slate-900 mb-4">Disease Predictor</h1>
+        <p class="text-gray-500 text-lg">Select your symptoms or describe how you're feeling. Our AI analyzes patterns to provide preliminary health awareness.</p>
+        
+        <!-- SEARCH BAR -->
+        <div class="mt-10 relative max-w-2xl mx-auto">
+            <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-blue-400"></i>
+            <input type="text" placeholder="Search symptoms (e.g., fatigue, muscle pain, dry cough)..." 
+            class="w-full pl-14 pr-6 py-4 rounded-2xl border-none shadow-lg shadow-blue-100 focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 pb-20 grid lg:grid-cols-3 gap-10">
+        
+        <!-- LEFT COLUMN: SYMPTOMS GRID -->
+        <div class="lg:col-span-2">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-slate-800">Common Symptoms</h2>
+                <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-md uppercase tracking-widest">Select Multiple</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Symptom Cards -->
+                <div class="symptom-card bg-white p-6 rounded-2xl shadow-sm" onclick="toggleSymptom(this, 'High Fever')">
+                    <div class="icon-box w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center mb-4 text-slate-600">
+                        <i class="fas fa-thermometer-half"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-800">High Fever</h4>
+                    <p class="text-xs text-gray-400">Body temp above 101°F</p>
+                </div>
+
+                <div class="symptom-card bg-white p-6 rounded-2xl shadow-sm selected" onclick="toggleSymptom(this, 'Dry Cough')">
+                    <div class="icon-box w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mb-4 text-white">
+                        <i class="fas fa-lungs"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-800">Dry Cough</h4>
+                    <p class="text-xs text-gray-400">Persistent without phlegm</p>
+                </div>
+
+                <div class="symptom-card bg-white p-6 rounded-2xl shadow-sm" onclick="toggleSymptom(this, 'Severe Headache')">
+                    <div class="icon-box w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center mb-4 text-slate-600">
+                        <i class="fas fa-skull"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-800">Severe Headache</h4>
+                    <p class="text-xs text-gray-400">Migraine or tension pain</p>
+                </div>
+
+                <div class="symptom-card bg-white p-6 rounded-2xl shadow-sm" onclick="toggleSymptom(this, 'Fatigue')">
+                    <div class="icon-box w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center mb-4 text-slate-600">
+                        <i class="fas fa-battery-quarter"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-800">Fatigue</h4>
+                    <p class="text-xs text-gray-400">Extreme lack of energy</p>
+                </div>
+
+                <div class="symptom-card bg-white p-6 rounded-2xl shadow-sm selected" onclick="toggleSymptom(this, 'Sore Throat')">
+                    <div class="icon-box w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mb-4 text-white">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-800">Sore Throat</h4>
+                    <p class="text-xs text-gray-400">Pain or irritation</p>
+                </div>
+
+                <div class="symptom-card bg-white p-6 rounded-2xl shadow-sm" onclick="toggleSymptom(this, 'Nausea')">
+                    <div class="icon-box w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center mb-4 text-slate-600">
+                        <i class="fas fa-stomach"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-800">Nausea</h4>
+                    <p class="text-xs text-gray-400">Stomach discomfort</p>
+                </div>
+
+                <div class="symptom-card bg-white p-6 rounded-2xl shadow-sm" onclick="toggleSymptom(this, 'Muscle Pain')">
+                    <div class="icon-box w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center mb-4 text-slate-600">
+                        <i class="fas fa-walking"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-800">Muscle Pain</h4>
+                    <p class="text-xs text-gray-400">Aches across body</p>
+                </div>
+
+                <div class="symptom-card bg-white p-6 rounded-2xl shadow-sm" onclick="toggleSymptom(this, 'Shortness of Breath')">
+                    <div class="icon-box w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center mb-4 text-slate-600">
+                        <i class="fas fa-wind"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-800">Shortness of Breath</h4>
+                    <p class="text-xs text-gray-400">Difficulty breathing</p>
+                </div>
+
+                <div class="symptom-card bg-white p-6 rounded-2xl shadow-sm" onclick="toggleSymptom(this, 'Blurred Vision')">
+                    <div class="icon-box w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center mb-4 text-slate-600">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-800">Blurred Vision</h4>
+                    <p class="text-xs text-gray-400">Visual impairment</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: ANALYSIS SIDEBAR -->
+        <aside>
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-blue-50 sticky top-28">
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-file-medical-alt"></i>
+                    </div>
+                    <h3 class="text-xl font-bold">Analysis Ready</h3>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-sm text-gray-400 font-medium">Selected Symptoms</span>
+                        <span class="text-xs font-bold text-blue-600">2 Selected</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="bg-slate-50 text-slate-600 text-[11px] font-bold px-3 py-2 rounded-lg border border-slate-100">Dry Cough &times;</span>
+                        <span class="bg-slate-50 text-slate-600 text-[11px] font-bold px-3 py-2 rounded-lg border border-slate-100">Sore Throat &times;</span>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50/50 p-5 rounded-2xl border border-blue-100 mb-8">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-circle-info text-blue-600 text-xs"></i>
+                        <span class="text-[10px] font-extrabold text-blue-600 uppercase tracking-widest">AI Insight</span>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed italic">
+                        "Current selection suggests potential upper respiratory condition. Adding 'Fever' data would increase accuracy."
+                    </p>
+                </div>
+
+                <button class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg shadow-blue-200 hover:bg-blue-700 transition mb-4">
+                    Analyze Symptoms <i class="fas fa-stethoscope"></i>
+                </button>
+                <p class="text-[10px] text-center text-gray-400 mb-8">Analysis typically takes 3-5 seconds</p>
+
+                <div class="pt-6 border-t border-slate-100">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-shield-check text-blue-600 text-xs"></i>
+                        <span class="text-xs font-bold text-slate-800">Data Privacy</span>
+                    </div>
+                    <p class="text-[10px] text-gray-400 leading-relaxed">Your data is encrypted end-to-end. We use anonymized processing to ensure your health information remains private.</p>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="max-w-7xl mx-auto px-6 py-12 border-t border-slate-200 flex flex-col md:flex-row justify-between items-start gap-10">
+        <div>
+            <h3 class="text-blue-700 font-bold mb-4">MediFlow AI Health</h3>
+            <p class="text-xs text-gray-400 max-w-sm leading-relaxed">
+                &copy; 2024 MediFlow AI Health. All rights reserved. Medical Disclaimer: This system provides AI-driven awareness and is not a substitute for professional medical advice.
+            </p>
+        </div>
+        <div class="grid grid-cols-2 gap-20">
+            <div>
+                <a href="#" class="block text-xs text-gray-400 mb-2 hover:text-blue-600">Privacy Policy</a>
+                <a href="#" class="block text-xs text-gray-400 hover:text-blue-600">Terms of Service</a>
+            </div>
+            <div>
+                <a href="#" class="block text-xs text-gray-400 mb-2 hover:text-blue-600">Contact Support</a>
+                <a href="#" class="block text-xs text-gray-400 hover:text-blue-600">Medical Data Safety</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleSymptom(element, name) {
+            element.classList.toggle('selected');
+            // Logic to update the sidebar can go here
+        }
+    </script>
+</body>
+</html>
