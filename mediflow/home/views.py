@@ -1,12 +1,24 @@
 from django.shortcuts import render
 import torch
 import joblib
+import numpy as np
 import os
 from torchvision import transforms
 from PIL import Image
 import sys
 
-# ───────────── Load Model Once at Startup ─────────────
+# Disease Prediction
+DISEASE_MODEL_PATH = "disease_predictor/disease_model.pkl"
+SYMPTOM_ENCODER_PATH = "disease_predictor/symptom_encoder.pkl"
+DISEASE_ENCODER_PATH = "disease_predictor/disease_encoder.pkl"
+
+disease_model = joblib.load(DISEASE_MODEL_PATH)
+symptom_encoder = joblib.load(SYMPTOM_ENCODER_PATH)
+disease_encoder = joblib.load(DISEASE_ENCODER_PATH)
+
+VALID_SYMPTOMS = set(symptom_encoder.classes_)
+
+# Skin Disease Prediction
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'skin_model'))
 from skin_model.model import SkinCNN
 
@@ -82,8 +94,56 @@ def about(request):
     return render(request,'about.html')
 
 def disease_predictor(request):
-    
-    return render(request,"disease-predictor.html")
+    context={}
+    # send symptoms to frontend
+    context["all_symptoms"]=sorted(VALID_SYMPTOMS)
+    if request.method=="POST":
+        symptoms=request.POST.getlist("symptoms")
+        # remove invalid symptoms
+        symptoms=[
+            s for s in symptoms
+            if s in VALID_SYMPTOMS
+        ]
+        context["selected"]=symptoms
+        if len(symptoms)<2:
+            context["need_more"]="Give more details"
+            return render(
+                request,
+                "disease-predictor.html",
+                context
+            )
+        try:
+            encoded=symptom_encoder.transform([symptoms])
+            prediction=disease_model.predict(encoded)
+            probabilities=disease_model.predict_proba(encoded)
+            disease=disease_encoder.inverse_transform(prediction)[0]
+            confidence=round(
+                np.max(probabilities)*100,2
+            )
+            # Top 3 predictions
+            top3=np.argsort(
+                probabilities[0]
+            )[-3:][::-1]
+            top_diseases=[]
+            for i in top3:
+                top_diseases.append({
+                    "name":
+                    disease_encoder.inverse_transform([i])[0],
+                    "confidence":
+                    round(
+                        probabilities[0][i]*100,2
+                    )
+                })
+            context["predicted_disease"]=disease
+            context["confidence"]=confidence
+            context["top_diseases"]=top_diseases
+        except:
+            context["need_more"]="Give more details"
+    return render(
+        request,
+        "disease-predictor.html",
+        context
+    )
 
 def skin_disease_predictor(request):
     context = {}
@@ -99,7 +159,7 @@ def skin_disease_predictor(request):
             context["top"]       = top
             context["bar_width"] = int(top["confidence"])
 
-            # ✅ Confidence — all classes decided in Python
+            #  Confidence — all classes decided in Python
             if top["confidence"] >= 80:
                 context["confidence_label"]      = "High Confidence"
                 context["confidence_bar_class"]  = "bg-green-500"
@@ -113,7 +173,7 @@ def skin_disease_predictor(request):
                 context["confidence_bar_class"]  = "bg-red-500"
                 context["confidence_text_class"] = "text-red-600"
 
-            # ✅ Risk badge + icon classes decided in Python
+            #  Risk badge + icon classes decided in Python
             risk_color = top["risk_color"]
             if risk_color == "red":
                 context["risk_badge_class"] = "bg-red-100 text-red-600"
@@ -125,7 +185,7 @@ def skin_disease_predictor(request):
                 context["risk_badge_class"] = "bg-green-100 text-green-600"
                 context["risk_icon_class"]  = "bg-green-50 text-green-500"
 
-            # ✅ Low confidence flag
+            # Low confidence flag
             context["low_confidence"] = top["confidence"] < 60
 
         except Exception as e:
