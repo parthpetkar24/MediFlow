@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,132 +10,158 @@
     <link rel="stylesheet" href="{% static 'style.css' %}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
+
 <body class="bg-[#f1f7ff]">
 
-    <!-- NAVIGATION BAR -->
-    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-blue-100">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <span class="text-2xl font-bold text-blue-700">MediFlow</span>
-            </div>
-            <div class="hidden lg:flex space-x-8">
-                <a href="{% url 'index' %}" class="nav-link active">Dashboard</a>
-                <a href="{% url 'skin_disease_predictor' %}" class="nav-link">Skin Detection</a>
-                <a href="{% url 'stress_analyser' %}" class="nav-link">Stress Analyzer</a>
-                <a href="{% url 'disease_predictor' %}" class="nav-link">Disease Predictor</a>
-                <a href="{% url 'health_tips' %}" class="nav-link">Health Tips</a>
-                <a href="{% url 'about' %}" class="nav-link">About</a>
-            </div>
-            <div class="flex items-center gap-4">
-                <i class="fas fa-user-circle text-gray-400 text-xl"></i>
-                <button class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold text-sm">Get Started</button>
-            </div>
+    <!-- NAVBAR -->
+    <nav class="bg-white shadow p-5 flex justify-between">
+        <h2 class="text-2xl font-bold text-blue-600">MediFlow</h2>
+        <div>
+            <a href="{% url 'index' %}" class="mr-6">Dashboard</a>
+            <a href="{% url 'skin_disease_predictor' %}">Skin</a>
+            <a href="{% url 'stress_analyser' %}" class="ml-6">Stress</a>
+            <a href="{% url 'disease_predictor' %}" class="ml-6">Disease</a>
+            <a href="{% url 'about' %}" class="ml-6">About</a>
         </div>
     </nav>
 
-    <!-- MAIN CONTENT -->
-    <main class="max-w-7xl mx-auto px-6 pt-16 pb-24">
-        
-        <!-- HEADER -->
-        <div class="text-center mb-12">
-            <span class="bg-blue-100 text-blue-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-4 inline-block">AI Dermatology Assistant</span>
-            <h1 class="text-5xl font-extrabold text-[#0f172a] mb-6">Precision Skin Analysis</h1>
-            <p class="text-gray-500 max-w-2xl mx-auto leading-relaxed">
-                Upload a clear photo of your skin concern. Our neural networks analyze patterns to provide immediate awareness of common dermatological conditions.
+    <!-- MAIN -->
+    <div class="max-w-4xl mx-auto mt-16 px-4">
+
+        <h1 class="text-4xl font-bold text-center mb-10">Skin Disease Predictor</h1>
+
+        <!-- UPLOAD FORM -->
+        <form method="POST" action="{% url 'skin_disease_predictor' %}"
+            enctype="multipart/form-data"
+            class="bg-white p-12 rounded-2xl shadow">
+            {% csrf_token %}
+
+            <div class="text-center">
+                <input type="file" id="fileUpload" name="skin_image"
+                    accept="image/*" required class="mb-6"/>
+
+                <img id="preview" class="mx-auto rounded-xl hidden mt-4 mb-4" width="250"/>
+            </div>
+
+            <button type="submit"
+                class="bg-blue-600 text-white px-8 py-3 rounded-xl w-full mt-8 hover:bg-blue-700 transition">
+                Analyze Image
+            </button>
+        </form>
+
+        <!-- RESULT -->
+        {% if top %}
+        <div class="bg-white mt-10 p-10 rounded-2xl shadow">
+
+            <h2 class="text-2xl font-bold mb-6 text-center">Prediction Result</h2>
+
+            <!-- Risk Badge -->
+            <div class="flex justify-center mb-6">
+                <span class="text-xs font-bold px-4 py-1 rounded-full uppercase tracking-widest {{ risk_badge_class }}">
+                    {{ top.risk }} Risk
+                </span>
+            </div>
+
+            <!-- Disease Name -->
+            <p class="text-xl text-center mb-3">
+                Disease : <b>{{ top.full_name }}</b>
             </p>
-        </div>
 
-        <!-- UPLOAD AREA -->
-        <div class="max-w-3xl mx-auto bg-white rounded-[2.5rem] p-12 shadow-sm border border-blue-50 mb-8">
-            <div class="border-2 border-dashed border-blue-100 rounded-[2rem] p-16 flex flex-col items-center justify-center text-center">
-                <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 text-2xl">
-                    <i class="fas fa-camera-viewfinder"></i>
-                </div>
-                <h3 class="text-xl font-bold text-slate-800 mb-2">Drop your photo here</h3>
-                <p class="text-sm text-gray-400 mb-8">Supports JPG, PNG (Max 10MB)</p>
-                
-                <input type="file" id="fileUpload" class="hidden">
-                <button onclick="document.getElementById('fileUpload').click()" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-3 hover:bg-blue-700 transition">
-                    <i class="fas fa-file-export"></i> Choose File
-                </button>
-            </div>
-        </div>
-
-        <!-- COMPLIANCE ROW -->
-        <div class="flex justify-center items-center gap-8 mb-24">
-            <div class="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                <i class="fas fa-shield-halved text-blue-500"></i> HIPAA Compliant
-            </div>
-            <div class="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                <i class="fas fa-lock text-blue-500"></i> End-to-end Encrypted
-            </div>
-        </div>
-
-        <!-- THE ANALYSIS JOURNEY -->
-        <div class="border-t border-blue-100 pt-20">
-            <div class="mb-16">
-                <h2 class="text-3xl font-bold text-slate-900 mb-2">The Analysis Journey</h2>
-                <div class="w-12 h-1 bg-blue-600 rounded-full"></div>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-12">
-                <!-- Step 1 -->
-                <div class="relative">
-                    <div class="text-8xl font-black text-slate-100 absolute -top-12 left-20 -z-10">01</div>
-                    <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-6">
-                        <i class="fas fa-expand"></i>
-                    </div>
-                    <h4 class="text-lg font-bold mb-3">1. Capture</h4>
-                    <p class="text-sm text-gray-500 leading-relaxed">
-                        Ensure neutral lighting and focus directly on the area of concern. High-resolution images yield the most accurate results.
-                    </p>
-                </div>
-
-                <!-- Step 2 -->
-                <div class="relative">
-                    <div class="text-8xl font-black text-slate-100 absolute -top-12 left-20 -z-10">02</div>
-                    <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-6">
-                        <i class="fas fa-microchip"></i>
-                    </div>
-                    <h4 class="text-lg font-bold mb-3">2. Processing</h4>
-                    <p class="text-sm text-gray-500 leading-relaxed">
-                        Our MediFlow AI compares your image against a clinical database of over 100,000 dermatological cases.
-                    </p>
-                </div>
-
-                <!-- Step 3 -->
-                <div class="relative">
-                    <div class="text-8xl font-black text-slate-100 absolute -top-12 left-20 -z-10">03</div>
-                    <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-6">
-                        <i class="fas fa-chart-bar"></i>
-                    </div>
-                    <h4 class="text-lg font-bold mb-3">3. Results</h4>
-                    <p class="text-sm text-gray-500 leading-relaxed">
-                        Receive a detailed classification report with risk assessment levels and recommended next steps for professional care.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </main>
-<!-- FOOTER -->
-    <footer class="max-w-7xl mx-auto px-6 py-12 border-t border-slate-200 flex flex-col md:flex-row justify-between items-start gap-10">
-        <div>
-            <h3 class="text-blue-700 font-bold mb-4">MediFlow AI Health</h3>
-            <p class="text-xs text-gray-400 max-w-sm leading-relaxed">
-                &copy; 2024 MediFlow AI Health. All rights reserved. Medical Disclaimer: This system provides AI-driven awareness and is not a substitute for professional medical advice.
+            <!-- Confidence -->
+            <p class="text-center mb-4">
+                Confidence :
+                <b class="{{ confidence_text_class }}">{{ top.confidence }}%</b>
             </p>
-        </div>
-        <div class="grid grid-cols-2 gap-20">
-            <div>
-                <a href="#" class="block text-xs text-gray-400 mb-2 hover:text-blue-600">Privacy Policy</a>
-                <a href="#" class="block text-xs text-gray-400 hover:text-blue-600">Terms of Service</a>
+
+            <!-- Confidence Bar -->
+            <div class="w-full bg-gray-100 rounded-full h-4 mb-2">
+                <div class="h-4 rounded-full {{ confidence_bar_class }}"
+                    style="width: {{ bar_width|floatformat:0 }}%">
+                </div>
             </div>
-            <div>
-                <a href="#" class="block text-xs text-gray-400 mb-2 hover:text-blue-600">Contact Support</a>
-                <a href="#" class="block text-xs text-gray-400 hover:text-blue-600">Medical Data Safety</a>
+            <p class="text-center text-sm {{ confidence_text_class }} mb-6">
+                {{ confidence_label }}
+            </p>
+
+            <!-- Low Confidence Warning -->
+            {% if low_confidence %}
+            <div class="bg-red-50 border border-red-100 rounded-xl px-5 py-3 text-sm text-red-600 font-semibold text-center mb-6">
+                <i class="fas fa-triangle-exclamation mr-2"></i>
+                Low confidence — image may be unclear. Please retake with better lighting.
+            </div>
+            {% endif %}
+
+            <!-- Top 3 Predictions -->
+            <h3 class="text-lg font-bold mb-4">Top 3 Predictions</h3>
+            <div class="space-y-4">
+                {% for result in results %}
+                <div>
+                    <div class="flex justify-between text-sm font-semibold text-slate-700 mb-1">
+                        <span>
+                            {% if forloop.first %}
+                            <span class="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-full mr-2">#1</span>
+                            {% else %}
+                            <span class="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded-full mr-2">#{{ forloop.counter }}</span>
+                            {% endif %}
+                            {{ result.full_name }}
+                        </span>
+                        <span class="text-gray-500">{{ result.confidence }}%</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2">
+                        <div class="h-2 rounded-full {% if forloop.first %}bg-blue-500{% else %}bg-gray-300{% endif %}"
+                            style="width: {{ result.confidence|floatformat:0 }}%">
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Disclaimer -->
+            <div class="bg-blue-50 border border-blue-100 rounded-xl px-6 py-4 text-sm text-blue-700 font-medium text-center mt-8">
+                <i class="fas fa-circle-info mr-2"></i>
+                AI-assisted prediction only — <strong>not a medical diagnosis</strong>.
+                Always consult a certified dermatologist.
             </div>
         </div>
+        {% endif %}
+
+        <!-- ERROR -->
+        {% if error %}
+        <div class="bg-red-100 text-red-600 p-5 mt-8 rounded-xl text-center font-semibold">
+            <i class="fas fa-circle-exclamation mr-2"></i> {{ error }}
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="text-center mt-20 p-10 text-gray-400">
+        AI assisted prediction only. Always consult a dermatologist.
     </footer>
+
+    <!-- JS: Image Preview -->
+    <script>
+        const fileInput = document.getElementById("fileUpload");
+        const preview   = document.getElementById("preview");
+
+        fileInput.addEventListener("change", function () {
+            const file = this.files[0];
+            if (file) {
+                preview.src = URL.createObjectURL(file);
+                preview.classList.remove("hidden");
+            }
+        });
+        {% if top %}
+    window.onload = function () {
+        setTimeout(function () {
+            window.scrollBy({
+                top: 400,        // adjust this number to scroll more or less
+                behavior: 'smooth'
+            });
+        }, 300);   // small delay so page fully loads first
+    };
+    {% endif %}
+    </script>
 
 </body>
 </html>
