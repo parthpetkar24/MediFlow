@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join MediFlow | Secure Health Account</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-[#f1f7ff] min-h-screen flex flex-col">
+
+    <!-- MINIMAL NAV FOR AUTH -->
+    <nav class="p-8">
+        <a href="index.html" class="flex items-center gap-2 text-2xl font-bold text-blue-700">
+            <i class="fas fa-heart-pulse"></i> MediFlow
+        </a>
+    </nav>
+
+    <main class="flex-grow flex items-center justify-center px-6 pb-12">
+        <div class="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-sm border border-blue-50">
+            
+            <!-- HEADER -->
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-xl">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h1 class="text-3xl font-extrabold text-slate-900">Create Account</h1>
+            </div>
+
+            <!-- FORM -->
+            <form action="#" class="space-y-5">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
+                    <input type="text" placeholder="Full Name" 
+                    class="w-full mt-2 px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
+                    <input type="email" placeholder="xyz@email.com" 
+                    class="w-full mt-2 px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Password</label>
+                    <input type="password" placeholder="••••••••" 
+                    class="w-full mt-2 px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                </div>
+
+                <div class="flex items-center gap-3 py-2">
+                    <input type="checkbox" class="w-4 h-4 rounded text-blue-600 border-slate-200">
+                    <span class="text-[11px] text-gray-400 leading-tight">I agree to the <a href="#" class="text-blue-600 underline">Privacy Policy</a> regarding medical data encryption.</span>
+                </div>
+
+                <button class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition duration-300">
+                    Create My Health Profile
+                </button>
+            </form>
+
+            <div class="relative my-8">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-100"></div></div>
+                <div class="relative flex justify-center text-[10px] font-bold uppercase tracking-widest"><span class="bg-white px-4 text-gray-300">Or continue with</span></div>
+            </div>
+
+            <!-- SOCIAL LOGIN -->
+            <div class="grid grid-cols-2 gap-4">
+                <button class="flex items-center justify-center gap-2 py-3 border border-slate-100 rounded-xl hover:bg-slate-50 transition">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4">
+                    <span class="text-xs font-bold text-slate-600">Google</span>
+                </button>
+                <button class="flex items-center justify-center gap-2 py-3 border border-slate-100 rounded-xl hover:bg-slate-50 transition">
+                    <i class="fab fa-apple text-lg"></i>
+                    <span class="text-xs font-bold text-slate-600">Apple</span>
+                </button>
+            </div>
+
+            <p class="text-center text-xs text-gray-400 mt-8">
+                Already have an account? <a href="#" class="text-blue-600 font-bold hover:underline">Sign In</a>
+            </p>
+        </div>
+    </main>
+</body>
+</html>

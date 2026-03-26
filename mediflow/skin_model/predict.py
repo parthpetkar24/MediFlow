@@ -75,7 +75,7 @@ def main():
     disease, confidence = predict_image(image_path)
     full_name = FULL_NAMES.get(disease, disease)
 
-    print("\n📋 RESULT")
+    print("\n RESULT")
     print("─" * 40)
     print(f"  Disease    : {full_name}")
     print(f"  Confidence : {round(confidence * 100, 2)}%")
@@ -85,13 +85,13 @@ def main():
     print(f"  [{bar}]")
 
     if confidence < 0.50:
-        print("\n  ⚠️  Very low confidence — result unreliable")
+        print("\n    Very low confidence — result unreliable")
     elif confidence < 0.70:
-        print("\n  ⚠️  Low confidence — consult a dermatologist")
+        print("\n    Low confidence — consult a dermatologist")
     else:
-        print("\n  ✅ Confident prediction")
+        print("\n   Confident prediction")
 
-    print("\n📊 Top Predictions")
+    print("\n Top Predictions")
     print("─" * 40)
     for rank, (d, c) in enumerate(predict_top3(image_path), 1):
         name = FULL_NAMES.get(d, d)
@@ -99,7 +99,7 @@ def main():
         print(f"  {rank}. {name:<35} {round(c*100, 2):>6.2f}%  [{bar}]")
 
     print("\n─" * 40)
-    print("  ⚕️  AI-assisted only. Always consult a dermatologist.")
+    print("    AI-assisted only. Always consult a dermatologist.")
     print("─" * 40)
 
 
