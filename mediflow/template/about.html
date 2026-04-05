@@ -1,34 +1,7 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About MediFlow | Our Mission</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body class="bg-[#f1f7ff]">
+{% extends 'base.html' %}
+{% block title %}About MediFlow | Our Mission{% endblock %}
 
-    <!-- NAVIGATION BAR -->
-    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-blue-100">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <span class="text-2xl font-bold text-blue-700">MediFlow</span>
-            </div>
-            <div class="hidden lg:flex space-x-8">
-                <a href="{% url 'index' %}" class="nav-link active">Dashboard</a>
-                <a href="{% url 'skin_disease_predictor' %}" class="nav-link">Skin Detection</a>
-                <a href="{% url 'stress_analyser' %}" class="nav-link">Stress Analyzer</a>
-                <a href="{% url 'disease_predictor' %}" class="nav-link">Disease Predictor</a>
-                <a href="{% url 'health_tips' %}" class="nav-link">Health Tips</a>
-                <a href="{% url 'about' %}" class="nav-link">About</a>
-            </div>
-            <button class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold text-sm">Get Started</button>
-        </div>
-    </nav>
-
+{% block body %}
     <!-- HERO SECTION -->
     <header class="max-w-7xl mx-auto pt-20 px-6">
         <div class="grid lg:grid-cols-2 gap-16 items-center">
@@ -64,8 +37,4 @@
         </div>
     </header>
     </section>
-
-
-
-</body>
-</html>
+{% endblock %}

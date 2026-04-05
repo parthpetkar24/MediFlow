@@ -1,13 +1,6 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Disease Predictor | MediFlow</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="stylesheet" href="{% static 'style.css' %}">
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">    
+{% extends 'base.html' %}
+{% block title %}Disease Predictor | MediFlow{% endblock %}
+{% block body %} 
         <style>
             .symptom-card{
                 cursor:pointer;
@@ -31,20 +24,6 @@
             }
         </style>
 
-    </head>
-
-<body class="bg-[#f1f7ff]">
-    <!-- NAVBAR -->
-    <nav class="bg-white shadow p-5 flex justify-between">
-        <h2 class="text-2xl font-bold text-blue-600">MediFlow</h2>
-        <div>
-            <a href="{% url 'index' %}" class="mr-6">Dashboard</a>
-            <a href="{% url 'skin_disease_predictor' %}">Skin</a>
-            <a href="{% url 'stress_analyser' %}" class="ml-6">Stress</a>
-            <a href="{% url 'disease_predictor' %}" class="ml-6">Disease</a>
-            <a href="{% url 'about' %}" class="ml-6">About</a>
-        </div>
-    </nav>
     <form method="POST">
     {% csrf_token %}
 
@@ -292,6 +271,4 @@
     }
 
     </script>
-
-</body>
-</html>
+{% endblock %}
