@@ -1,40 +1,119 @@
 {% extends 'base.html' %}
 {% block title %}About MediFlow | Our Mission{% endblock %}
-
 {% block body %}
-    <!-- HERO SECTION -->
-    <header class="max-w-7xl mx-auto pt-20 px-6">
-        <div class="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-                <span class="bg-blue-100 text-blue-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-4 inline-block">The Future of Care</span>
-                <h1 class="text-6xl font-extrabold text-[#0f172a] mb-8 leading-tight">Bridging AI with <br><span class="text-blue-600">Human Health</span></h1>
-                <p class="text-gray-500 text-lg leading-relaxed mb-10 max-w-lg">
-                    MediFlow was born from a simple idea: health awareness shouldn't be complicated. We use cutting-edge neural networks to empower individuals with preliminary insights before they visit the clinic.
-                </p>
-                <div class="flex gap-4">
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-blue-50 flex-1">
-                        <h4 class="text-blue-600 font-bold text-2xl">98%</h4>
-                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Detection Accuracy</p>
+
+<div id="about-root"></div>
+
+{% verbatim %}
+<script type="text/babel">
+function AboutPage() {
+    const [stats, setStats] = React.useState({ accuracy: 0, cases: 0, uptime: 0 });
+
+    React.useEffect(() => {
+        const targets = { accuracy: 98, cases: 100, uptime: 99.9 };
+        const steps = 60; const duration = 2000;
+        let step = 0;
+        const timer = setInterval(() => {
+            step++;
+            const e = 1 - Math.pow(1 - Math.min(step / steps, 1), 3);
+            setStats({
+                accuracy: Math.round(targets.accuracy * e),
+                cases:    Math.round(targets.cases    * e),
+                uptime:   (targets.uptime * e).toFixed(1),
+            });
+            if (step >= steps) clearInterval(timer);
+        }, duration / steps);
+        return () => clearInterval(timer);
+    }, []);
+
+    const techStack = [
+        { icon: 'fa-brain',        name: 'PyTorch',   desc: 'Deep learning framework powering our CNN models',   color: '#fb923c' },
+        { icon: 'fa-server',       name: 'Django',    desc: 'Robust Python backend for secure data processing',  color: '#06d6a0' },
+        { icon: 'fa-atom',         name: 'React',     desc: 'Dynamic, component-driven user interfaces',         color: '#38bdf8' },
+        { icon: 'fa-shield-halved',name: 'Security',  desc: 'End-to-end encryption for all medical data',        color: '#8b5cf6' },
+    ];
+
+    return (
+        <div>
+            <header className="max-w-7xl mx-auto pt-20 px-6">
+                <div className="grid lg:grid-cols-2 gap-16 items-center">
+                    <div className="anim-slide-left">
+                        <span className="badge badge-cyan mb-6">The Future of Care</span>
+                        <h1 className="text-5xl lg:text-6xl font-black leading-tight mb-8" style={{fontFamily: 'Outfit, sans-serif'}}>
+                            Bridging AI with<br/>
+                            <span className="gradient-text">Human Health</span>
+                        </h1>
+                        <p className="text-lg text-slate-400 leading-relaxed mb-10 max-w-lg">
+                            MediFlow was born from a simple idea: health awareness shouldn't be complicated.
+                            We use cutting-edge neural networks to empower individuals with preliminary insights before they visit the clinic.
+                        </p>
+                        <div className="flex gap-4">
+                            {[
+                                { val: `${stats.accuracy}%`, label: 'Detection Accuracy' },
+                                { val: `${stats.cases}k+`,   label: 'Clinical Cases'     },
+                                { val: `${stats.uptime}%`,   label: 'Uptime'             },
+                            ].map((s, i) => (
+                                <div key={i} className="glass-card p-5 rounded-2xl flex-1 text-center" style={{cursor: 'default'}}>
+                                    <h4 className="text-2xl font-black gradient-text">{s.val}</h4>
+                                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">{s.label}</p>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-blue-50 flex-1">
-                        <h4 class="text-blue-600 font-bold text-2xl">100k+</h4>
-                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Clinical Cases</p>
+
+                    <div className="anim-slide-right anim-delay-200">
+                        <div className="glass-card p-12 rounded-3xl relative overflow-hidden" style={{cursor: 'default'}}>
+                            <div className="absolute inset-0 opacity-10"
+                                 style={{backgroundImage: 'radial-gradient(#38bdf8 1px, transparent 1px)', backgroundSize: '20px 20px'}}></div>
+                            <div className="relative z-10">
+                                <i className="fas fa-quote-left text-3xl mb-6" style={{color: 'rgba(56,189,248,0.4)'}}></i>
+                                <p className="text-lg text-slate-300 italic leading-relaxed font-light">
+                                    "At MediFlow, our goal is to empower individuals with early health awareness through intelligent technology.
+                                    We provide a simple, accessible platform where users understand their health better by analyzing skin conditions,
+                                    stress levels, and common symptoms."
+                                </p>
+                                <div className="mt-8 flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full flex items-center justify-center"
+                                         style={{background: 'linear-gradient(135deg, #06d6a0, #38bdf8)'}}>
+                                        <i className="fas fa-heartbeat text-white text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-200">MediFlow Team</p>
+                                        <p className="text-xs text-slate-500">Health Awareness Platform</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="relative">
-                <div class="bg-[#1e293b] rounded-[3rem] p-12 aspect-square flex flex-col justify-end text-white overflow-hidden shadow-2xl">
-                    <div class="absolute inset-0 opacity-20">
-                        <!-- Abstract Grid Background -->
-                        <div class="absolute inset-0" style="background-image: radial-gradient(#3b82f6 1px, transparent 1px); background-size: 20px 20px;"></div>
-                    </div>
-                    <div class="relative z-10">
-                        <i class="fas fa-quote-left text-blue-400 text-3xl mb-6"></i>
-                        <h3 class="text-2xl font-light italic leading-relaxed mb-6">"At MediFlow, our goal is to empower individuals with early health awareness through the use of intelligent technology. We aim to provide a simple and accessible platform where users can understand their health better by analyzing skin conditions, stress levels, and common symptoms. By combining AI-based insights with user-friendly design, we strive to promote preventive care, encourage timely action, and help people make informed decisions about their well-being. Our mission is not to replace medical professionals, but to act as a supportive tool that guides users toward a healthier lifestyle."</h3>
-                    </div>
+            </header>
+
+            <section className="max-w-7xl mx-auto py-24 px-6">
+                <div className="text-center mb-16 anim-fade-in-up">
+                    <span className="badge badge-violet mb-4">Under the Hood</span>
+                    <h2 className="text-4xl font-bold mb-4" style={{fontFamily: 'Outfit, sans-serif'}}>Built with Modern Tech</h2>
+                    <p className="text-slate-500 max-w-xl mx-auto">Our stack is carefully chosen for reliability, speed, and clinical accuracy.</p>
                 </div>
-            </div>
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {techStack.map((tech, i) => (
+                        <div key={i} className={`glass-card p-8 text-center anim-fade-in-up anim-delay-${(i+2)*100}`} style={{cursor: 'default'}}>
+                            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6"
+                                 style={{background: `${tech.color}15`}}>
+                                <i className={`fas ${tech.icon} text-xl`} style={{color: tech.color}}></i>
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-100 mb-2">{tech.name}</h3>
+                            <p className="text-xs text-slate-500 leading-relaxed">{tech.desc}</p>
+                        </div>
+                    ))}
+                </div>
+            </section>
         </div>
-    </header>
-    </section>
+    );
+}
+
+const aboutRoot = ReactDOM.createRoot(document.getElementById('about-root'));
+aboutRoot.render(<AboutPage />);
+</script>
+{% endverbatim %}
+
 {% endblock %}

@@ -1,274 +1,179 @@
 {% extends 'base.html' %}
 {% block title %}Disease Predictor | MediFlow{% endblock %}
-{% block body %} 
-        <style>
-            .symptom-card{
-                cursor:pointer;
-                transition:.2s;
-                border:2px solid transparent;
-            }
-            .symptom-card:hover{
-                transform:translateY(-2px);
-            }
-            .symptom-card.selected{
-                border-color:#2563eb;
-                background:#f8fbff!important;
-            }
-            .selected-chip{
-                background:#eff6ff;
-                color:#1d4ed8;
-                padding:6px 10px;
-                border-radius:8px;
-                font-size:12px;
-                font-weight:600;
-            }
-        </style>
+{% block body %}
 
-    <form method="POST">
+{{ all_symptoms|json_script:"symptoms-data" }}
+
+{% if predicted_disease %}
+<script id="prediction-data" type="application/json">
+{
+    "disease": "{{ predicted_disease }}",
+    "confidence": {{ confidence }},
+    "top_diseases": [{% for d in top_diseases %}{"name": "{{ d.name }}", "confidence": {{ d.confidence }}}{% if not forloop.last %},{% endif %}{% endfor %}]
+}
+</script>
+{% endif %}
+
+<div id="disease-root"></div>
+
+<form method="POST" id="disease-form" style="display:none;">
     {% csrf_token %}
-
-    <!-- HEADER -->
-
-    <header class="max-w-4xl mx-auto text-center py-10">
-
-    <h1 class="text-4xl font-extrabold text-slate-900 mb-3">
-
-    Disease Predictor
-
-    </h1>
-
-    <p class="text-gray-500">
-
-    Select symptoms to get AI based prediction
-
-    </p>
-
-    </header>
-
-    <main class="max-w-7xl mx-auto px-6 pb-20 grid lg:grid-cols-3 gap-10">
-
-    <!-- SYMPTOMS -->
-
-    <div class="lg:col-span-2">
-
-    <h2 class="text-xl font-bold mb-6">
-
-    Select Symptoms
-
-    </h2>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-h-[520px] overflow-y-auto pr-2">
-
-    {% for symptom in all_symptoms %}
-
-    <div class="symptom-card bg-white p-5 rounded-2xl shadow min-h-[90px] flex items-center"
-
-    onclick="toggleSymptom(this,'{{symptom}}')">
-
-    <h4 class="font-semibold text-[15px] text-slate-800">
-
-    {{symptom|title}}
-
-    </h4>
-
-    </div>
-
-    {% endfor %}
-
-    </div>
-
-    </div>
-
-    <!-- ANALYSIS PANEL -->
-
-    <aside class="sticky top-24 h-fit">
-
-    <div class="bg-white rounded-3xl p-8 shadow border border-blue-50">
-
-    <h3 class="text-xl font-bold mb-6">
-
-    Analysis Panel
-
-    </h3>
-
-    <!-- Selected -->
-
-    <div class="mb-6">
-
-    <p class="text-sm text-gray-500 mb-2">
-
-    Selected Symptoms
-
-    </p>
-
-    <div id="selectedSymptoms"
-    class="flex flex-wrap gap-2">
-
-    None
-
-    </div>
-
-    </div>
-
-    <!-- Button -->
-
-    <button type="submit"
-
-    class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold text-[15px] shadow-md hover:bg-blue-700 transition">
-
-    Analyze Symptoms
-
-    </button>
-
-    <!-- Prediction -->
-
-    {% if predicted_disease %}
-
-    <div class="mt-6">
-
-    <h3 class="font-bold text-lg">
-
-    Prediction Result
-
-    </h3>
-
-    <p class="text-blue-600 font-bold text-xl">
-
-    {{predicted_disease}}
-
-    </p>
-
-    <p class="text-sm text-gray-600">
-
-    Confidence : {{confidence}} %
-
-    </p>
-
-    <h4 class="mt-4 font-semibold">
-
-    Top Matches
-
-    </h4>
-
-    {% for d in top_diseases %}
-
-    <div class="mt-2">
-
-    <div class="flex justify-between text-sm">
-
-    <span>{{d.name}}</span>
-
-    <span>{{d.confidence}}%</span>
-
-    </div>
-
-    <div class="w-full bg-gray-200 rounded h-2 mt-1">
-
-    <div class="bg-blue-600 h-2 rounded"
-
-    style="width:{{d.confidence}}%">
-
-    </div>
-
-    </div>
-
-    </div>
-
-    {% endfor %}
-
-    </div>
-
-    {% endif %}
-
-    <!-- Need more -->
-
-    {% if need_more %}
-
-    <div class="mt-6 text-red-500 font-bold text-center">
-
-    Give more details
-
-    </div>
-
-    {% endif %}
-
-    </div>
-
-    </aside>
-
-    </main>
-
-    <!-- Hidden inputs -->
-
     <div id="hiddenInputs"></div>
+</form>
 
-    </form>
+<!-- Extract Django-rendered booleans to JS before verbatim -->
+<script>
+    var _NEED_MORE = {{ need_more|yesno:"true,false,false" }};
+</script>
 
-    <script>
+{% verbatim %}
+<script type="text/babel">
+function DiseasePredictor() {
+    const allSymptoms = JSON.parse(document.getElementById('symptoms-data').textContent) || [];
+    const predEl      = document.getElementById('prediction-data');
+    const prediction  = predEl ? JSON.parse(predEl.textContent) : null;
+    const needMore    = _NEED_MORE;
 
-    let selected=[]
+    const [selected, setSelected] = React.useState([]);
+    const [search,   setSearch]   = React.useState('');
+    const resultsRef = React.useRef(null);
 
-    function toggleSymptom(el,name){
+    React.useEffect(() => {
+        if (prediction && resultsRef.current) {
+            setTimeout(() => resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+        }
+    }, [prediction]);
 
-    el.classList.toggle("selected")
+    const toggleSymptom = (symptom) => setSelected(prev =>
+        prev.includes(symptom) ? prev.filter(s => s !== symptom) : [...prev, symptom]
+    );
 
-    if(selected.includes(name)){
+    const handleSubmit = () => {
+        const form   = document.getElementById('disease-form');
+        const hidden = document.getElementById('hiddenInputs');
+        hidden.innerHTML = '';
+        selected.forEach(s => {
+            const input = document.createElement('input');
+            input.type = 'hidden'; input.name = 'symptoms'; input.value = s;
+            hidden.appendChild(input);
+        });
+        form.submit();
+    };
 
-    selected=selected.filter(
-    s=>s!=name
-    )
+    const filtered = allSymptoms.filter(s => s.toLowerCase().replace(/_/g, ' ').includes(search.toLowerCase()));
 
-    }else{
+    return (
+        <div>
+            <header className="max-w-4xl mx-auto text-center py-12 px-6 anim-fade-in-up">
+                <span className="badge badge-violet mb-4">AI Diagnostics</span>
+                <h1 className="text-4xl lg:text-5xl font-black mb-4" style={{fontFamily: 'Outfit, sans-serif'}}>
+                    Disease <span className="gradient-text">Predictor</span>
+                </h1>
+                <p className="text-slate-400 max-w-xl mx-auto">
+                    Select your symptoms below to receive an AI-powered disease prediction with confidence scores.
+                </p>
+            </header>
 
-    selected.push(name)
+            <main className="max-w-7xl mx-auto px-6 pb-20 grid lg:grid-cols-3 gap-10">
+                <div className="lg:col-span-2 anim-slide-left">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-bold text-slate-200">Select Symptoms</h2>
+                        <span className="text-xs text-slate-500">{selected.length} selected</span>
+                    </div>
+                    <div className="relative mb-6">
+                        <i className="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 text-sm"></i>
+                        <input type="text" placeholder="Search symptoms..." value={search}
+                               onChange={(e) => setSearch(e.target.value)} className="input-glass pl-11 py-3" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-h-[520px] overflow-y-auto pr-2" style={{scrollbarWidth: 'thin'}}>
+                        {filtered.map((symptom) => (
+                            <div key={symptom}
+                                 className={`symptom-card p-4 cursor-pointer flex items-center gap-3 ${selected.includes(symptom) ? 'selected' : ''}`}
+                                 onClick={() => toggleSymptom(symptom)}>
+                                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition ${selected.includes(symptom) ? 'border-cyan-400 bg-cyan-400/20' : 'border-slate-700'}`}>
+                                    {selected.includes(symptom) && <i className="fas fa-check text-[9px] text-cyan-400"></i>}
+                                </div>
+                                <span className="font-medium text-sm text-slate-300">
+                                    {symptom.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
 
-    }
+                <aside className="sticky top-24 h-fit anim-slide-right anim-delay-200">
+                    <div className="glass-card p-8 rounded-3xl" style={{cursor: 'default'}}>
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xl font-bold text-slate-100">Analysis Panel</h3>
+                            <div className="w-3 h-3 rounded-full bg-cyan-400" style={{animation: 'pulseGlow 2s infinite'}}></div>
+                        </div>
+                        <div className="mb-6">
+                            <p className="text-xs text-slate-500 mb-3 uppercase tracking-wider font-bold">Selected Symptoms</p>
+                            <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                                {selected.length === 0
+                                    ? <span className="text-sm text-slate-600 italic">None selected</span>
+                                    : selected.map(s => <span key={s} className="selected-chip text-xs">{s.replace(/_/g, ' ')}</span>)
+                                }
+                            </div>
+                        </div>
+                        <button onClick={handleSubmit} disabled={selected.length < 2}
+                                className="btn-primary w-full py-4 rounded-xl font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed">
+                            <span><i className="fas fa-microscope mr-2"></i>Analyze Symptoms ({selected.length})</span>
+                        </button>
+                        {selected.length < 2 && selected.length > 0 && (
+                            <p className="text-xs text-amber-400/70 mt-2 text-center">Select at least 2 symptoms</p>
+                        )}
 
-    updateUI()
+                        {prediction && (
+                            <div ref={resultsRef} className="mt-8 pt-6 border-t border-white/5">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
+                                    <h3 className="font-bold text-lg text-slate-100">Prediction Result</h3>
+                                </div>
+                                <div className="glass-card p-4 rounded-xl mb-4" style={{cursor: 'default', background: 'rgba(6,214,160,0.06)'}}>
+                                    <p className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-1">Primary Diagnosis</p>
+                                    <p className="text-xl font-black gradient-text">{prediction.disease}</p>
+                                    <p className="text-sm text-slate-400 mt-1">Confidence: <span className="text-cyan-400 font-bold">{prediction.confidence}%</span></p>
+                                </div>
+                                <h4 className="font-bold text-sm text-slate-300 mb-3">Top Matches</h4>
+                                {prediction.top_diseases.map((d, i) => (
+                                    <div key={i} className="mb-3">
+                                        <div className="flex justify-between text-sm mb-1">
+                                            <span className="text-slate-300">{d.name}</span>
+                                            <span className="text-slate-500">{d.confidence}%</span>
+                                        </div>
+                                        <div className="progress-bar-track h-2">
+                                            <div className="progress-bar-fill h-2"
+                                                 style={{width: `${d.confidence}%`, background: i === 0 ? 'linear-gradient(90deg, #06d6a0, #38bdf8)' : 'rgba(148,163,184,0.3)'}}>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                <div className="mt-4 p-3 rounded-xl text-xs text-sky-300/70 font-medium text-center"
+                                     style={{background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.1)'}}>
+                                    <i className="fas fa-circle-info mr-1"></i>
+                                    AI prediction only — consult a doctor for diagnosis.
+                                </div>
+                            </div>
+                        )}
 
-    }
+                        {needMore && (
+                            <div className="mt-6 p-3 rounded-xl text-sm font-bold text-center"
+                                 style={{background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.15)', color: '#f87171'}}>
+                                <i className="fas fa-triangle-exclamation mr-2"></i>
+                                Please provide more symptom details
+                            </div>
+                        )}
+                    </div>
+                </aside>
+            </main>
+        </div>
+    );
+}
 
-    function updateUI(){
+const diseaseRoot = ReactDOM.createRoot(document.getElementById('disease-root'));
+diseaseRoot.render(<DiseasePredictor />);
+</script>
+{% endverbatim %}
 
-    let div=document.getElementById(
-    "selectedSymptoms"
-    )
-
-    if(selected.length==0){
-
-    div.innerHTML="None"
-
-    }else{
-
-    div.innerHTML=""
-
-    selected.forEach(s=>{
-
-    div.innerHTML+=
-    `<span class="selected-chip">
-    ${s.replaceAll("_"," ")}
-    </span>`
-
-    })
-
-    }
-
-    let hidden=document.getElementById(
-    "hiddenInputs"
-    )
-
-    hidden.innerHTML=""
-
-    selected.forEach(s=>{
-
-    hidden.innerHTML+=
-    `<input type="hidden"
-    name="symptoms"
-    value="${s}">`
-
-    })
-
-    }
-
-    </script>
 {% endblock %}

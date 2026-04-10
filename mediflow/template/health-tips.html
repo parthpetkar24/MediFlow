@@ -2,103 +2,88 @@
 {% block title %}Health Awareness Tips | MediFlow{% endblock %}
 {% block body %}
 
-    <!-- HEADER SECTION -->
-    <header class="max-w-7xl mx-auto pt-16 px-6 text-center">
-        <span class="bg-teal-100 text-teal-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-4 inline-block">Daily Wellness Guide</span>
-        <h1 class="text-5xl font-extrabold text-slate-900 mb-6">Preventative Knowledge</h1>
-        <p class="text-gray-500 max-w-2xl mx-auto mb-12">Small daily habits lead to long-term health clinical outcomes. Explore our curated insights for a balanced life.</p>
-        
-        <!-- CATEGORY FILTERS -->
-        <div class="flex flex-wrap justify-center gap-4 mb-16">
-            <button class="px-6 py-2 bg-blue-600 text-white rounded-full text-xs font-bold shadow-lg shadow-blue-100">All Tips</button>
-            <button class="px-6 py-2 bg-white text-slate-600 rounded-full text-xs font-bold border border-slate-100 hover:border-blue-400">Nutrition</button>
-            <button class="px-6 py-2 bg-white text-slate-600 rounded-full text-xs font-bold border border-slate-100 hover:border-blue-400">Mental Health</button>
-            <button class="px-6 py-2 bg-white text-slate-600 rounded-full text-xs font-bold border border-slate-100 hover:border-blue-400">Physical Activity</button>
+<div id="tips-root"></div>
+
+{% verbatim %}
+<script type="text/babel">
+function HealthTips() {
+    const [activeFilter, setActiveFilter] = React.useState('All');
+
+    const tips = [
+        { icon: 'fa-droplet',     title: 'Optimal Hydration',   category: 'Nutrition',         color: '#38bdf8', actionLabel: 'Action Step',    action: 'Drink 250ml water first thing in the morning.',         desc: 'Drinking water helps maintain blood volume and supports kidney function. Aim for consistently clear urine as a hydration benchmark.'                              },
+        { icon: 'fa-brain',       title: 'Deep Work Sprints',   category: 'Mental Health',     color: '#fb923c', actionLabel: 'Mental Shield',   action: 'Use the Pomodoro technique for daily tasks.',            desc: 'Protect your mental energy by working in 90-minute blocks followed by a 15-minute screen-free break to reduce cortisol.'                                        },
+        { icon: 'fa-leaf',        title: 'Post-Meal Walks',     category: 'Physical Activity', color: '#34d399', actionLabel: 'Metabolic Boost', action: 'Take the stairs instead of the elevator today.',         desc: 'A light 10-minute walk after lunch can help stabilize blood sugar spikes and improve metabolic flexibility.'                                                    },
+        { icon: 'fa-moon',        title: 'Circadian Alignment', category: 'Mental Health',     color: '#8b5cf6', actionLabel: 'Sleep Hygiene',   action: 'No blue light 1 hour before sleeping.',                  desc: 'Try to view sunlight within 30 minutes of waking to set your internal clock for better sleep quality at night.'                                                },
+        { icon: 'fa-heart',       title: 'Salt Mindfulness',    category: 'Nutrition',         color: '#f43f5e', actionLabel: 'Heart Guard',     action: 'Use herbs/spices for flavor instead of salt.',           desc: 'Reducing sodium intake by just 1,000mg per day can significantly lower blood pressure and protect heart health.'                                                },
+        { icon: 'fa-sun',         title: 'Vitamin D Synthesis', category: 'Physical Activity', color: '#fbbf24', actionLabel: 'Immune Shield',   action: 'Spend your coffee break outdoors today.',                desc: '15 minutes of direct morning sunlight on your skin supports bone health and boosts your immune system\'s T-cells.'                                              },
+        { icon: 'fa-dumbbell',    title: 'Resistance Training', category: 'Physical Activity', color: '#06d6a0', actionLabel: 'Strength Base',   action: 'Start with 10 push-ups and 10 squats daily.',            desc: 'Just 20 minutes of bodyweight exercises 3x per week can improve insulin sensitivity and boost metabolic rate.'                                                  },
+        { icon: 'fa-apple-whole', title: 'Fiber First',         category: 'Nutrition',         color: '#38bdf8', actionLabel: 'Glucose Hack',    action: 'Start meals with salad or vegetables.',                  desc: 'Eating fiber before carbs slows glucose absorption by up to 73%, reducing post-meal energy crashes.'                                                            },
+        { icon: 'fa-spa',         title: 'Breathing Protocol',  category: 'Mental Health',     color: '#a78bfa', actionLabel: 'Calm Protocol',   action: 'Practice 5 minutes of box breathing before bed.',        desc: 'Box breathing (4s inhale, 4s hold, 4s exhale, 4s hold) activates the parasympathetic nervous system.'                                                          },
+    ];
+
+    const categories = ['All', 'Nutrition', 'Mental Health', 'Physical Activity'];
+    const filtered = activeFilter === 'All' ? tips : tips.filter(t => t.category === activeFilter);
+
+    return (
+        <div>
+            <header className="max-w-7xl mx-auto pt-16 px-6 text-center anim-fade-in-up">
+                <span className="badge mb-4" style={{background: 'rgba(52,211,153,0.1)', color: '#34d399', border: '1px solid rgba(52,211,153,0.2)'}}>
+                    Daily Wellness Guide
+                </span>
+                <h1 className="text-5xl font-black mb-6" style={{fontFamily: 'Outfit, sans-serif'}}>
+                    Preventative <span className="gradient-text">Knowledge</span>
+                </h1>
+                <p className="text-slate-400 max-w-2xl mx-auto mb-12">
+                    Small daily habits lead to long-term health clinical outcomes. Explore our curated insights for a balanced life.
+                </p>
+                <div className="flex flex-wrap justify-center gap-3 mb-16">
+                    {categories.map((cat) => (
+                        <button key={cat} onClick={() => setActiveFilter(cat)}
+                                className={`px-6 py-2.5 rounded-full text-xs font-bold transition-all duration-300 border ${
+                                    activeFilter === cat
+                                        ? 'text-slate-900 border-transparent shadow-lg'
+                                        : 'text-slate-400 border-white/5 hover:border-cyan-400/30 hover:text-cyan-400'
+                                }`}
+                                style={activeFilter === cat
+                                    ? {background: 'linear-gradient(135deg, #06d6a0, #38bdf8)', boxShadow: '0 4px 20px rgba(6,214,160,0.3)'}
+                                    : {background: 'var(--bg-card)'}}>
+                            {cat}
+                        </button>
+                    ))}
+                </div>
+            </header>
+
+            <main className="max-w-7xl mx-auto px-6 pb-24">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {filtered.map((tip, i) => (
+                        <div key={tip.title} className={`tip-card p-8 flex flex-col h-full anim-fade-in-up anim-delay-${Math.min((i+1)*100, 800)}`}>
+                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6 text-xl"
+                                 style={{background: `${tip.color}12`}}>
+                                <i className={`fas ${tip.icon}`} style={{color: tip.color}}></i>
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-100 mb-3">{tip.title}</h3>
+                            <span className="text-[10px] font-bold uppercase tracking-wider mb-4 inline-block"
+                                  style={{color: `${tip.color}99`}}>
+                                {tip.category}
+                            </span>
+                            <p className="text-sm text-slate-500 mb-6 flex-grow leading-relaxed">{tip.desc}</p>
+                            <div className="pt-6 mt-auto" style={{borderTop: '1px solid rgba(255,255,255,0.04)'}}>
+                                <span className="text-[10px] font-bold uppercase tracking-widest" style={{color: tip.color}}>
+                                    {tip.actionLabel}
+                                </span>
+                                <p className="text-xs text-slate-200 font-bold mt-1">{tip.action}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </main>
         </div>
-    </header>
+    );
+}
 
-    <main class="max-w-7xl mx-auto px-6 pb-24">
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            
-            <!-- TIP 1 -->
-            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-blue-50 hover:shadow-xl transition-all h-full flex flex-col">
-                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 text-xl">
-                    <i class="fas fa-droplet"></i>
-                </div>
-                <h3 class="text-xl font-bold text-slate-800 mb-3">Optimal Hydration</h3>
-                <p class="text-sm text-gray-400 mb-6 flex-grow">Drinking water helps maintain blood volume and supports kidney function. Aim for consistently clear urine as a hydration benchmark.</p>
-                <div class="pt-6 border-t border-slate-50 mt-auto">
-                    <span class="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Action Step</span>
-                    <p class="text-xs text-slate-900 font-bold mt-1">Drink 250ml water first thing in the morning.</p>
-                </div>
-            </div>
-
-            <!-- TIP 2 -->
-            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-blue-50 hover:shadow-xl transition-all h-full flex flex-col">
-                <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center mb-6 text-xl">
-                    <i class="fas fa-brain"></i>
-                </div>
-                <h3 class="text-xl font-bold text-slate-800 mb-3">Deep Work Sprints</h3>
-                <p class="text-sm text-gray-400 mb-6 flex-grow">Protect your mental energy by working in 90-minute blocks followed by a 15-minute screen-free break to reduce cortisol.</p>
-                <div class="pt-6 border-t border-slate-50 mt-auto">
-                    <span class="text-[10px] font-bold text-orange-600 uppercase tracking-widest">Mental Shield</span>
-                    <p class="text-xs text-slate-900 font-bold mt-1">Use the Pomodoro technique for daily tasks.</p>
-                </div>
-            </div>
-
-            <!-- TIP 3 -->
-            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-blue-50 hover:shadow-xl transition-all h-full flex flex-col">
-                <div class="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mb-6 text-xl">
-                    <i class="fas fa-leaf"></i>
-                </div>
-                <h3 class="text-xl font-bold text-slate-800 mb-3">Post-Meal Walks</h3>
-                <p class="text-sm text-gray-400 mb-6 flex-grow">A light 10-minute walk after lunch can help stabilize blood sugar spikes and improve metabolic flexibility.</p>
-                <div class="pt-6 border-t border-slate-50 mt-auto">
-                    <span class="text-[10px] font-bold text-green-600 uppercase tracking-widest">Metabolic Boost</span>
-                    <p class="text-xs text-slate-900 font-bold mt-1">Take the stairs instead of the elevator today.</p>
-                </div>
-            </div>
-
-            <!-- TIP 4 -->
-            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-blue-50 hover:shadow-xl transition-all h-full flex flex-col">
-                <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 text-xl">
-                    <i class="fas fa-moon"></i>
-                </div>
-                <h3 class="text-xl font-bold text-slate-800 mb-3">Circadian Alignment</h3>
-                <p class="text-sm text-gray-400 mb-6 flex-grow">Try to view sunlight within 30 minutes of waking to set your internal clock for better sleep quality at night.</p>
-                <div class="pt-6 border-t border-slate-50 mt-auto">
-                    <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Sleep Hygiene</span>
-                    <p class="text-xs text-slate-900 font-bold mt-1">No blue light 1 hour before sleeping.</p>
-                </div>
-            </div>
-
-            <!-- TIP 5 -->
-            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-blue-50 hover:shadow-xl transition-all h-full flex flex-col">
-                <div class="w-12 h-12 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mb-6 text-xl">
-                    <i class="fas fa-heart"></i>
-                </div>
-                <h3 class="text-xl font-bold text-slate-800 mb-3">Salt Mindfulness</h3>
-                <p class="text-sm text-gray-400 mb-6 flex-grow">Reducing sodium intake by just 1,000mg per day can significantly lower blood pressure and protect heart health.</p>
-                <div class="pt-6 border-t border-slate-50 mt-auto">
-                    <span class="text-[10px] font-bold text-red-600 uppercase tracking-widest">Heart Guard</span>
-                    <p class="text-xs text-slate-900 font-bold mt-1">Use herbs/spices for flavor instead of salt.</p>
-                </div>
-            </div>
-
-            <!-- TIP 6 -->
-            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-blue-50 hover:shadow-xl transition-all h-full flex flex-col">
-                <div class="w-12 h-12 bg-yellow-50 text-yellow-600 rounded-2xl flex items-center justify-center mb-6 text-xl">
-                    <i class="fas fa-sun"></i>
-                </div>
-                <h3 class="text-xl font-bold text-slate-800 mb-3">Vitamin D Synthesis</h3>
-                <p class="text-sm text-gray-400 mb-6 flex-grow">15 minutes of direct morning sunlight on your skin supports bone health and boosts your immune system's T-cells.</p>
-                <div class="pt-6 border-t border-slate-50 mt-auto">
-                    <span class="text-[10px] font-bold text-yellow-600 uppercase tracking-widest">Immune Shield</span>
-                    <p class="text-xs text-slate-900 font-bold mt-1">Spend your coffee break outdoors today.</p>
-                </div>
-            </div>
-
-        </div>
-    </main>
+const tipsRoot = ReactDOM.createRoot(document.getElementById('tips-root'));
+tipsRoot.render(<HealthTips />);
+</script>
+{% endverbatim %}
 
 {% endblock %}

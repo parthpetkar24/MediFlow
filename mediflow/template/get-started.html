@@ -1,73 +1,69 @@
 {% extends 'base.html' %}
 {% block title %}Get Started | MediFlow AI{% endblock %}
 {% block body %}
-    <style>
-        .tool-card {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .tool-card:hover {
-            transform: translateY(-15px);
-            border-color: #3b82f6;
-            background-color: white;
-        }
-    </style>
 
-    <!-- MAIN CONTENT -->
-    <main class="max-w-7xl mx-auto px-6 py-20">
-        <div class="text-center mb-20">
-            <span class="bg-blue-100 text-blue-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-4 inline-block">Selection Portal</span>
-            <h1 class="text-5xl font-extrabold text-[#0f172a] mb-6">Choose Your Analysis</h1>
-            <p class="text-gray-500 max-w-2xl mx-auto text-lg leading-relaxed">
-                Select the AI tool you wish to use. Each module is specifically trained for clinical awareness and precision.
-            </p>
-        </div>
+<div id="getstarted-root"></div>
 
-        <div class="grid md:grid-cols-3 gap-10">
-            
-            <!-- SKIN DETECTION CARD -->
-            <a href="{% url 'skin_disease_predictor' %}" class="tool-card group bg-white/50 p-10 rounded-[3rem] border border-blue-100 shadow-sm flex flex-col items-center text-center">
-                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-8 text-2xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                    <i class="fas fa-camera"></i>
-                </div>
-                <h3 class="text-2xl font-bold text-slate-800 mb-4">Skin Detection</h3>
-                <p class="text-sm text-gray-400 leading-relaxed mb-8">
-                    Upload photos for instant analysis of moles, rashes, and other dermatological conditions.
+{% verbatim %}
+<script type="text/babel">
+function GetStartedPage() {
+    const tools = [
+        { name: 'Skin Detection',   icon: 'fa-camera',        url: _URLS.skin,    color: '#38bdf8', gradient: 'linear-gradient(135deg, rgba(56,189,248,0.15), rgba(56,189,248,0.02))',   desc: 'Upload photos for instant analysis of moles, rashes, and other dermatological conditions using our CNN model.'       },
+        { name: 'Stress Analyzer',  icon: 'fa-brain',         url: _URLS.stress,  color: '#fb923c', gradient: 'linear-gradient(135deg, rgba(251,146,60,0.15), rgba(251,146,60,0.02))',   desc: 'Analyze behavioral patterns and self-reported biometrics to quantify cognitive load and cortisol risk.'             },
+        { name: 'Disease Predictor',icon: 'fa-notes-medical', url: _URLS.disease, color: '#8b5cf6', gradient: 'linear-gradient(135deg, rgba(139,92,246,0.15), rgba(139,92,246,0.02))',   desc: 'Input symptoms and lifestyle data for probabilistic health risk assessments powered by machine learning.'           },
+    ];
+
+    return (
+        <main className="max-w-7xl mx-auto px-6 py-20">
+            <div className="text-center mb-20 anim-fade-in-up">
+                <span className="badge badge-cyan mb-6">Selection Portal</span>
+                <h1 className="text-5xl lg:text-6xl font-black mb-6" style={{fontFamily: 'Outfit, sans-serif'}}>
+                    Choose Your <span className="gradient-text">Analysis</span>
+                </h1>
+                <p className="text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed">
+                    Select the AI tool you wish to use. Each module is specifically trained for clinical awareness and precision.
                 </p>
-                <span class="mt-auto inline-flex items-center gap-2 text-blue-600 font-bold group-hover:gap-4 transition-all">
-                    Open Tool <i class="fas fa-arrow-right"></i>
-                </span>
-            </a>
+            </div>
 
-            <!-- STRESS ANALYZER CARD -->
-            <a href="{% url 'stress_analyser' %}" class="tool-card group bg-white/50 p-10 rounded-[3rem] border border-blue-100 shadow-sm flex flex-col items-center text-center">
-                <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mb-8 text-2xl group-hover:bg-orange-600 group-hover:text-white transition-colors">
-                    <i class="fas fa-brain"></i>
-                </div>
-                <h3 class="text-2xl font-bold text-slate-800 mb-4">Stress Analyzer</h3>
-                <p class="text-sm text-gray-400 leading-relaxed mb-8">
-                    Analyze behavioral patterns and self-reported biometrics to quantify cognitive load.
-                </p>
-                <span class="mt-auto inline-flex items-center gap-2 text-orange-600 font-bold group-hover:gap-4 transition-all">
-                    Open Tool <i class="fas fa-arrow-right"></i>
-                </span>
-            </a>
+            <div className="grid md:grid-cols-3 gap-10">
+                {tools.map((tool, i) => (
+                    <a key={i} href={tool.url}
+                       className={`tool-card group p-10 flex flex-col items-center text-center no-underline anim-fade-in-up anim-delay-${(i+2)*100}`}
+                       style={{background: tool.gradient}}>
+                        <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-8 text-3xl transition-all duration-300 group-hover:scale-110"
+                             style={{background: `${tool.color}15`, color: tool.color}}>
+                            <i className={`fas ${tool.icon}`}></i>
+                        </div>
+                        <h3 className="text-2xl font-bold text-slate-100 mb-4">{tool.name}</h3>
+                        <p className="text-sm text-slate-500 leading-relaxed mb-8">{tool.desc}</p>
+                        <span className="mt-auto inline-flex items-center gap-2 font-bold transition-all duration-300 group-hover:gap-4"
+                              style={{color: tool.color}}>
+                            Open Tool <i className="fas fa-arrow-right"></i>
+                        </span>
+                    </a>
+                ))}
+            </div>
 
-            <!-- DISEASE PREDICTOR CARD -->
-            <a href="{% url 'disease_predictor' %}" class="tool-card group bg-white/50 p-10 rounded-[3rem] border border-blue-100 shadow-sm flex flex-col items-center text-center">
-                <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mb-8 text-2xl group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                    <i class="fas fa-notes-medical"></i>
-                </div>
-                <h3 class="text-2xl font-bold text-slate-800 mb-4">Disease Predictor</h3>
-                <p class="text-sm text-gray-400 leading-relaxed mb-8">
-                    Input symptoms and lifestyle data for probabilistic health risk assessments and insights.
-                </p>
-                <span class="mt-auto inline-flex items-center gap-2 text-indigo-600 font-bold group-hover:gap-4 transition-all">
-                    Open Tool <i class="fas fa-arrow-right"></i>
-                </span>
-            </a>
+            <div className="grid grid-cols-3 gap-6 mt-20 anim-fade-in-up anim-delay-700">
+                {[
+                    { label: 'Response Time', value: '<2s',  icon: 'fa-bolt'     },
+                    { label: 'Models Active', value: '3',    icon: 'fa-microchip'},
+                    { label: 'Data Encrypted',value: '100%', icon: 'fa-lock'     },
+                ].map((stat, i) => (
+                    <div key={i} className="glass-card p-6 text-center rounded-2xl" style={{cursor: 'default'}}>
+                        <i className={`fas ${stat.icon} text-slate-600 mb-3 text-lg`}></i>
+                        <p className="text-2xl font-black gradient-text">{stat.value}</p>
+                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">{stat.label}</p>
+                    </div>
+                ))}
+            </div>
+        </main>
+    );
+}
 
-        </div>
+const gsRoot = ReactDOM.createRoot(document.getElementById('getstarted-root'));
+gsRoot.render(<GetStartedPage />);
+</script>
+{% endverbatim %}
 
-        
-    </main>
 {% endblock %}

@@ -4,37 +4,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% endblock %}</title>
+    <meta name="description" content="MediFlow — AI-Powered Health Awareness Platform.">
+    <title>{% block title %}MediFlow{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link rel="stylesheet" href="{% static 'style.css' %}">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
-<body class="bg-[#f1f7ff]">
+<body>
 
-    <!-- NAVIGATION BAR -->
-    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-blue-100">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <span class="text-2xl font-bold text-blue-700">MediFlow</span>
-            </div>
-            <div class="hidden lg:flex space-x-8">
-                <a href="{% url 'index' %}" class="nav-link active">Dashboard</a>
-                <a href="{% url 'skin_disease_predictor' %}" class="nav-link">Skin Detection</a>
-                <a href="{% url 'stress_analyser' %}" class="nav-link">Stress Analyzer</a>
-                <a href="{% url 'disease_predictor' %}" class="nav-link">Disease Predictor</a>
-                <a href="{% url 'health_tips' %}" class="nav-link">Health Tips</a>
-                <a href="{% url 'about' %}" class="nav-link">About</a>
-            </div>
-            <div class="flex items-center gap-4">
-                <a href="{% url 'signup' %}">
-                <i class="fas fa-user-circle text-gray-400 text-xl cursor-pointer hover:text-blue-600 transition"></i>
-                <a href="{% url 'get_started' %}" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold text-sm hover:bg-blue-700 transition">
-    Get Started
-</a>
-            </div>
-        </div>
-    </nav>
-    {% block body %}
-    {% endblock %}
+    <div class="mesh-bg">
+        <div class="mesh-orb mesh-orb-1"></div>
+        <div class="mesh-orb mesh-orb-2"></div>
+        <div class="mesh-orb mesh-orb-3"></div>
+    </div>
+
+    <div id="navbar-root"></div>
+
+    <!-- Render Django URLs into JS before the verbatim block -->
+    <script>
+        var _URLS = {
+            index:   "{% url 'index' %}",
+            skin:    "{% url 'skin_disease_predictor' %}",
+            stress:  "{% url 'stress_analyser' %}",
+            disease: "{% url 'disease_predictor' %}",
+            tips:    "{% url 'health_tips' %}",
+            about:   "{% url 'about' %}",
+            signup:  "{% url 'signup' %}",
+            start:   "{% url 'get_started' %}",
+        };
+    </script>
+
+    {% verbatim %}
+    <script type="text/babel">
+        function Navbar() {
+            const [mobileOpen, setMobileOpen] = React.useState(false);
+
+            const navLinks = [
+                { name: 'Dashboard',        url: _URLS.index   },
+                { name: 'Skin Detection',   url: _URLS.skin    },
+                { name: 'Stress Analyzer',  url: _URLS.stress  },
+                { name: 'Disease Predictor',url: _URLS.disease },
+                { name: 'Health Tips',      url: _URLS.tips    },
+                { name: 'About',            url: _URLS.about   },
+            ];
+
+            const currentPath = window.location.pathname;
+
+            return (
+                <nav className="nav-glass sticky top-0 z-50">
+                    <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+                        <a href={_URLS.index} className="flex items-center gap-3 no-underline">
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                                 style={{background: 'linear-gradient(135deg, #06d6a0, #38bdf8)'}}>
+                                <i className="fas fa-heartbeat text-white text-lg"></i>
+                            </div>
+                            <span className="logo-text text-xl">MediFlow</span>
+                        </a>
+
+                        <div className="hidden lg:flex items-center space-x-8">
+                            {navLinks.map((link, i) => (
+                                <a key={i} href={link.url}
+                                   className={`nav-link ${currentPath === link.url ? 'active' : ''}`}>
+                                    {link.name}
+                                </a>
+                            ))}
+                        </div>
+
+                        <div className="hidden lg:flex items-center gap-4">
+                            <a href={_URLS.signup} className="text-slate-400 hover:text-cyan-400 transition">
+                                <i className="fas fa-user-circle text-xl"></i>
+                            </a>
+                            <a href={_URLS.start}
+                               className="btn-primary text-sm py-2.5 px-6 rounded-xl no-underline inline-flex items-center gap-2">
+                                <span>Get Started</span>
+                                <i className="fas fa-arrow-right text-xs"></i>
+                            </a>
+                        </div>
+
+                        <button
+                            className={`lg:hidden hamburger bg-transparent border-none cursor-pointer p-2 ${mobileOpen ? 'active' : ''}`}
+                            onClick={() => setMobileOpen(!mobileOpen)}>
+                            <span></span><span></span><span></span>
+                        </button>
+                    </div>
+
+                    <div className={`mobile-menu fixed inset-0 top-20 z-40 ${mobileOpen ? 'active' : ''}`}
+                         style={{background: 'rgba(6,8,15,0.97)', backdropFilter: 'blur(24px)'}}>
+                        <div className="flex flex-col items-center justify-center gap-6 pt-16">
+                            {navLinks.map((link, i) => (
+                                <a key={i} href={link.url}
+                                   className="text-xl font-semibold text-slate-300 hover:text-cyan-400 no-underline transition">
+                                    {link.name}
+                                </a>
+                            ))}
+                            <div className="mt-6 flex gap-4">
+                                <a href={_URLS.start} className="btn-primary py-3 px-8 rounded-xl no-underline">
+                                    <span>Get Started</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            );
+        }
+
+        const navRoot = ReactDOM.createRoot(document.getElementById('navbar-root'));
+        navRoot.render(<Navbar />);
+    </script>
+    {% endverbatim %}
+
+    {% block body %}{% endblock %}
+
 </body>
 </html>

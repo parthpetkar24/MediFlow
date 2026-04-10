@@ -6,80 +6,127 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Join MediFlow | Secure Health Account</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link rel="stylesheet" href="{% static 'style.css' %}">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
-<body class="bg-[#f1f7ff] min-h-screen flex flex-col">
+<body>
+    <div class="mesh-bg">
+        <div class="mesh-orb mesh-orb-1"></div>
+        <div class="mesh-orb mesh-orb-2"></div>
+        <div class="mesh-orb mesh-orb-3"></div>
+    </div>
 
-    <!-- MINIMAL NAV FOR AUTH -->
-    <nav class="p-8">
-        <a href="{% url 'index' %}" class="flex items-center gap-2 text-2xl font-bold text-blue-700">
-            <i class="fas fa-heart-pulse"></i> MediFlow
-        </a>
-    </nav>
+    <script>
+        var _URLS = {
+            index: "{% url 'index' %}",
+            start: "{% url 'get_started' %}",
+        };
+    </script>
 
-    <main class="flex-grow flex items-center justify-center px-6 pb-12">
-        <div class="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-sm border border-blue-50">
-            
-            <!-- HEADER -->
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-xl">
-                    <i class="fas fa-user-plus"></i>
-                </div>
-                <h1 class="text-3xl font-extrabold text-slate-900">Create Account</h1>
+    <div id="signup-root" class="min-h-screen flex flex-col"></div>
+
+    {% verbatim %}
+    <script type="text/babel">
+    function SignupPage() {
+        const [formData,     setFormData]     = React.useState({ name: '', email: '', password: '' });
+        const [agreed,       setAgreed]       = React.useState(false);
+        const [focusedField, setFocusedField] = React.useState(null);
+
+        const handleChange = (field, value) => setFormData(prev => ({...prev, [field]: value}));
+
+        return (
+            <div className="min-h-screen flex flex-col">
+                <nav className="p-8">
+                    <a href={_URLS.index} className="flex items-center gap-3 no-underline">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                             style={{background: 'linear-gradient(135deg, #06d6a0, #38bdf8)'}}>
+                            <i className="fas fa-heartbeat text-white text-lg"></i>
+                        </div>
+                        <span className="logo-text text-xl">MediFlow</span>
+                    </a>
+                </nav>
+
+                <main className="flex-grow flex items-center justify-center px-6 pb-12">
+                    <div className="w-full max-w-lg">
+                        <div className="glass-card p-10 lg:p-12 rounded-3xl anim-fade-in-up" style={{cursor: 'default'}}>
+                            <div className="text-center mb-10">
+                                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
+                                     style={{background: 'linear-gradient(135deg, rgba(6,214,160,0.15), rgba(56,189,248,0.15))'}}>
+                                    <i className="fas fa-user-plus text-xl gradient-text"></i>
+                                </div>
+                                <h1 className="text-3xl font-black text-slate-100" style={{fontFamily: 'Outfit, sans-serif'}}>Create Account</h1>
+                                <p className="text-sm text-slate-500 mt-2">Begin your AI-powered health journey</p>
+                            </div>
+
+                            <form action="#" className="space-y-5">
+                                {[
+                                    { field: 'name',     label: 'Full Name',       type: 'text',     placeholder: 'John Doe',       icon: 'fa-user'     },
+                                    { field: 'email',    label: 'Email Address',   type: 'email',    placeholder: 'john@email.com', icon: 'fa-envelope' },
+                                    { field: 'password', label: 'Password',        type: 'password', placeholder: '••••••••',       icon: 'fa-lock'     },
+                                ].map((input, i) => (
+                                    <div key={i}>
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">{input.label}</label>
+                                        <div className="relative mt-2">
+                                            <i className={`fas ${input.icon} absolute left-4 top-1/2 -translate-y-1/2 text-sm ${focusedField === input.field ? 'text-cyan-400' : 'text-slate-600'} transition`}></i>
+                                            <input type={input.type} placeholder={input.placeholder} value={formData[input.field]}
+                                                   onChange={(e) => handleChange(input.field, e.target.value)}
+                                                   onFocus={() => setFocusedField(input.field)}
+                                                   onBlur={() => setFocusedField(null)}
+                                                   className="input-glass pl-11" />
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <div className="flex items-center gap-3 py-2">
+                                    <input type="checkbox" checked={agreed} onChange={() => setAgreed(!agreed)}
+                                           className="w-4 h-4 rounded" style={{accentColor: '#06d6a0'}} />
+                                    <span className="text-[11px] text-slate-500 leading-tight">
+                                        I agree to the <a href="#" className="text-cyan-400 underline">Privacy Policy</a> regarding medical data encryption.
+                                    </span>
+                                </div>
+
+                                <button type="submit" className="btn-primary w-full py-4 rounded-2xl text-base"
+                                        style={{opacity: agreed ? 1 : 0.5, pointerEvents: agreed ? 'auto' : 'none'}}>
+                                    <span>Create My Health Profile</span>
+                                </button>
+                            </form>
+
+                            <div className="relative my-8">
+                                <div className="gradient-divider"></div>
+                                <div className="relative flex justify-center -mt-3">
+                                    <span className="px-4 text-[10px] font-bold uppercase tracking-widest text-slate-600"
+                                          style={{background: 'var(--bg-card)'}}>Or continue with</span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <button className="glass-card flex items-center justify-center gap-2 py-3 rounded-xl hover:border-cyan-400/30 transition" style={{cursor: 'pointer'}}>
+                                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-4 h-4" alt="Google" />
+                                    <span className="text-xs font-bold text-slate-400">Google</span>
+                                </button>
+                                <button className="glass-card flex items-center justify-center gap-2 py-3 rounded-xl hover:border-cyan-400/30 transition" style={{cursor: 'pointer'}}>
+                                    <i className="fab fa-apple text-lg text-slate-400"></i>
+                                    <span className="text-xs font-bold text-slate-400">Apple</span>
+                                </button>
+                            </div>
+
+                            <p className="text-center text-xs text-slate-600 mt-8">
+                                Already have an account? <a href="#" className="text-cyan-400 font-bold no-underline hover:underline">Sign In</a>
+                            </p>
+                        </div>
+                    </div>
+                </main>
             </div>
+        );
+    }
 
-            <!-- FORM -->
-            <form action="#" class="space-y-5">
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
-                    <input type="text" placeholder="Full Name" 
-                    class="w-full mt-2 px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 outline-none text-sm">
-                </div>
-
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
-                    <input type="email" placeholder="xyz@email.com" 
-                    class="w-full mt-2 px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 outline-none text-sm">
-                </div>
-
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Password</label>
-                    <input type="password" placeholder="••••••••" 
-                    class="w-full mt-2 px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 outline-none text-sm">
-                </div>
-
-                <div class="flex items-center gap-3 py-2">
-                    <input type="checkbox" class="w-4 h-4 rounded text-blue-600 border-slate-200">
-                    <span class="text-[11px] text-gray-400 leading-tight">I agree to the <a href="#" class="text-blue-600 underline">Privacy Policy</a> regarding medical data encryption.</span>
-                </div>
-
-                <button class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition duration-300">
-                    Create My Health Profile
-                </button>
-            </form>
-
-            <div class="relative my-8">
-                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-100"></div></div>
-                <div class="relative flex justify-center text-[10px] font-bold uppercase tracking-widest"><span class="bg-white px-4 text-gray-300">Or continue with</span></div>
-            </div>
-
-            <!-- SOCIAL LOGIN -->
-            <div class="grid grid-cols-2 gap-4">
-                <button class="flex items-center justify-center gap-2 py-3 border border-slate-100 rounded-xl hover:bg-slate-50 transition">
-                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-4 h-4">
-                    <span class="text-xs font-bold text-slate-600">Google</span>
-                </button>
-                <button class="flex items-center justify-center gap-2 py-3 border border-slate-100 rounded-xl hover:bg-slate-50 transition">
-                    <i class="fab fa-apple text-lg"></i>
-                    <span class="text-xs font-bold text-slate-600">Apple</span>
-                </button>
-            </div>
-
-            <p class="text-center text-xs text-gray-400 mt-8">
-                Already have an account? <a href="#" class="text-blue-600 font-bold hover:underline">Sign In</a>
-            </p>
-        </div>
-    </main>
+    const signupRoot = ReactDOM.createRoot(document.getElementById('signup-root'));
+    signupRoot.render(<SignupPage />);
+    </script>
+    {% endverbatim %}
 </body>
 </html>

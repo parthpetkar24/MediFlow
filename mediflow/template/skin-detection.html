@@ -1,137 +1,181 @@
 {% extends 'base.html' %}
 {% block title %}Skin Detection | MediFlow{% endblock %}
 {% block body %}
-    <!-- MAIN -->
-    <div class="max-w-4xl mx-auto mt-16 px-4">
 
-        <h1 class="text-4xl font-bold text-center mb-10">Skin Disease Predictor</h1>
+{% if top %}
+<script id="skin-results-data" type="application/json">
+{"top":{"label":"{{ top.label }}","full_name":"{{ top.full_name }}","confidence":{{ top.confidence }},"risk":"{{ top.risk }}","risk_color":"{{ top.risk_color }}"},"results":[{% for r in results %}{"label":"{{ r.label }}","full_name":"{{ r.full_name }}","confidence":{{ r.confidence }},"risk":"{{ r.risk }}"}{% if not forloop.last %},{% endif %}{% endfor %}],"bar_width":{{ bar_width|default:"0" }},"confidence_label":"{{ confidence_label }}","low_confidence":{{ low_confidence|yesno:"true,false" }}}
+</script>
+{% endif %}
 
-        <!-- UPLOAD FORM -->
-        <form method="POST" action="{% url 'skin_disease_predictor' %}"
-            enctype="multipart/form-data"
-            class="bg-white p-12 rounded-2xl shadow">
-            {% csrf_token %}
+{% if error %}
+<script id="skin-error-data" type="application/json">{"error": "{{ error }}"}</script>
+{% endif %}
 
-            <div class="text-center">
-                <input type="file" id="fileUpload" name="skin_image"
-                    accept="image/*" required class="mb-6"/>
+<!-- Extract Django values to JS before verbatim -->
+<script>
+    var _SKIN_URL   = "{% url 'skin_disease_predictor' %}";
+    var _CSRF_TOKEN = "{{ csrf_token }}";
+</script>
 
-                <img id="preview" class="mx-auto rounded-xl hidden mt-4 mb-4" width="250"/>
-            </div>
+<div id="skin-root"></div>
 
-            <button type="submit"
-                class="bg-blue-600 text-white px-8 py-3 rounded-xl w-full mt-8 hover:bg-blue-700 transition">
-                Analyze Image
-            </button>
-        </form>
+{% verbatim %}
+<script type="text/babel">
+function SkinDetection() {
+    const [preview,  setPreview]  = React.useState(null);
+    const [dragOver, setDragOver] = React.useState(false);
+    const fileRef    = React.useRef(null);
+    const resultsRef = React.useRef(null);
 
-        <!-- RESULT -->
-        {% if top %}
-        <div class="bg-white mt-10 p-10 rounded-2xl shadow">
+    const resultsEl = document.getElementById('skin-results-data');
+    const data      = resultsEl ? JSON.parse(resultsEl.textContent) : null;
+    const errorEl   = document.getElementById('skin-error-data');
+    const errorData = errorEl ? JSON.parse(errorEl.textContent) : null;
 
-            <h2 class="text-2xl font-bold mb-6 text-center">Prediction Result</h2>
+    React.useEffect(() => {
+        if (data && resultsRef.current) {
+            setTimeout(() => resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }), 400);
+        }
+    }, [data]);
 
-            <!-- Risk Badge -->
-            <div class="flex justify-center mb-6">
-                <span class="text-xs font-bold px-4 py-1 rounded-full uppercase tracking-widest {{ risk_badge_class }}">
-                    {{ top.risk }} Risk
-                </span>
-            </div>
-
-            <!-- Disease Name -->
-            <p class="text-xl text-center mb-3">
-                Disease : <b>{{ top.full_name }}</b>
-            </p>
-
-            <!-- Confidence -->
-            <p class="text-center mb-4">
-                Confidence :
-                <b class="{{ confidence_text_class }}">{{ top.confidence }}%</b>
-            </p>
-
-            <!-- Confidence Bar -->
-            <div class="w-full bg-gray-100 rounded-full h-4 mb-2">
-                <div class="h-4 rounded-full {{ confidence_bar_class }}"
-                    style="width: {{ bar_width|floatformat:0 }}%">
-                </div>
-            </div>
-            <p class="text-center text-sm {{ confidence_text_class }} mb-6">
-                {{ confidence_label }}
-            </p>
-
-            <!-- Low Confidence Warning -->
-            {% if low_confidence %}
-            <div class="bg-red-50 border border-red-100 rounded-xl px-5 py-3 text-sm text-red-600 font-semibold text-center mb-6">
-                <i class="fas fa-triangle-exclamation mr-2"></i>
-                Low confidence — image may be unclear. Please retake with better lighting.
-            </div>
-            {% endif %}
-
-            <!-- Top 3 Predictions -->
-            <h3 class="text-lg font-bold mb-4">Top 3 Predictions</h3>
-            <div class="space-y-4">
-                {% for result in results %}
-                <div>
-                    <div class="flex justify-between text-sm font-semibold text-slate-700 mb-1">
-                        <span>
-                            {% if forloop.first %}
-                            <span class="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-full mr-2">#1</span>
-                            {% else %}
-                            <span class="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded-full mr-2">#{{ forloop.counter }}</span>
-                            {% endif %}
-                            {{ result.full_name }}
-                        </span>
-                        <span class="text-gray-500">{{ result.confidence }}%</span>
-                    </div>
-                    <div class="w-full bg-gray-100 rounded-full h-2">
-                        <div class="h-2 rounded-full {% if forloop.first %}bg-blue-500{% else %}bg-gray-300{% endif %}"
-                            style="width: {{ result.confidence|floatformat:0 }}%">
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-
-            <!-- Disclaimer -->
-            <div class="bg-blue-50 border border-blue-100 rounded-xl px-6 py-4 text-sm text-blue-700 font-medium text-center mt-8">
-                <i class="fas fa-circle-info mr-2"></i>
-                AI-assisted prediction only — <strong>not a medical diagnosis</strong>.
-                Always consult a certified dermatologist.
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- ERROR -->
-        {% if error %}
-        <div class="bg-red-100 text-red-600 p-5 mt-8 rounded-xl text-center font-semibold">
-            <i class="fas fa-circle-exclamation mr-2"></i> {{ error }}
-        </div>
-        {% endif %}
-
-    </div>
-
-
-    <!-- JS: Image Preview -->
-    <script>
-        const fileInput = document.getElementById("fileUpload");
-        const preview   = document.getElementById("preview");
-
-        fileInput.addEventListener("change", function () {
-            const file = this.files[0];
-            if (file) {
-                preview.src = URL.createObjectURL(file);
-                preview.classList.remove("hidden");
-            }
-        });
-        {% if top %}
-    window.onload = function () {
-        setTimeout(function () {
-            window.scrollBy({
-                top: 400,        
-                behavior: 'smooth'
-            });
-        }, 300);   
+    const handleFile = (e) => { const f = e.target.files[0]; if (f) setPreview(URL.createObjectURL(f)); };
+    const handleDrop = (e) => {
+        e.preventDefault(); setDragOver(false);
+        const f = e.dataTransfer.files[0];
+        if (f && fileRef.current) { fileRef.current.files = e.dataTransfer.files; setPreview(URL.createObjectURL(f)); }
     };
-    {% endif %}
-    </script>
+
+    const getRiskColors = (risk) => {
+        if (risk === 'High')   return { bg: 'rgba(244,63,94,0.1)',   text: '#f87171', border: 'rgba(244,63,94,0.2)'   };
+        if (risk === 'Medium') return { bg: 'rgba(251,191,36,0.1)',  text: '#fbbf24', border: 'rgba(251,191,36,0.2)'  };
+        return                        { bg: 'rgba(52,211,153,0.1)',  text: '#34d399', border: 'rgba(52,211,153,0.2)'  };
+    };
+
+    const getConfColors = (conf) => {
+        if (conf >= 80) return { gradient: 'linear-gradient(90deg, #06d6a0, #34d399)', text: '#34d399' };
+        if (conf >= 60) return { gradient: 'linear-gradient(90deg, #fbbf24, #fb923c)', text: '#fbbf24' };
+        return                 { gradient: 'linear-gradient(90deg, #f43f5e, #f87171)', text: '#f87171' };
+    };
+
+    return (
+        <div className="max-w-4xl mx-auto px-6 py-16">
+            <div className="text-center mb-12 anim-fade-in-up">
+                <span className="badge badge-blue mb-4">Computer Vision</span>
+                <h1 className="text-4xl lg:text-5xl font-black mb-4" style={{fontFamily: 'Outfit, sans-serif'}}>
+                    Skin Disease <span className="gradient-text">Predictor</span>
+                </h1>
+                <p className="text-slate-400 max-w-xl mx-auto">
+                    Upload a photo of the affected skin area for AI-powered analysis using our trained CNN model.
+                </p>
+            </div>
+
+            {/* Use _SKIN_URL and _CSRF_TOKEN from the pre-verbatim script */}
+            <form method="POST" action={_SKIN_URL} encType="multipart/form-data">
+                <input type="hidden" name="csrfmiddlewaretoken" value={_CSRF_TOKEN} />
+
+                <div className="glass-card p-10 rounded-3xl anim-fade-in-up anim-delay-200" style={{cursor: 'default'}}>
+                    <div className={`upload-zone p-12 text-center ${dragOver ? 'dragover' : ''}`}
+                         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                         onDragLeave={() => setDragOver(false)}
+                         onDrop={handleDrop}
+                         onClick={() => fileRef.current?.click()}>
+                        {preview ? (
+                            <div>
+                                <img src={preview} className="mx-auto rounded-2xl max-h-64 object-cover mb-4 shadow-lg"
+                                     style={{border: '2px solid rgba(56,189,248,0.2)'}} />
+                                <p className="text-xs text-slate-500">Click to change image</p>
+                            </div>
+                        ) : (
+                            <div>
+                                <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6" style={{background: 'rgba(56,189,248,0.1)'}}>
+                                    <i className="fas fa-cloud-arrow-up text-3xl text-sky-400"></i>
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-200 mb-2">Drop your image here</h3>
+                                <p className="text-sm text-slate-500">or click to browse • PNG, JPG, JPEG</p>
+                            </div>
+                        )}
+                        <input ref={fileRef} type="file" name="skin_image" accept="image/*" required className="hidden" onChange={handleFile} />
+                    </div>
+                    <button type="submit" className="btn-primary w-full py-4 rounded-xl mt-8 text-base">
+                        <span><i className="fas fa-microscope mr-2"></i>Analyze Image</span>
+                    </button>
+                </div>
+            </form>
+
+            {data && (
+                <div ref={resultsRef} className="glass-card p-10 rounded-3xl mt-10 anim-fade-in-up" style={{cursor: 'default'}}>
+                    <h2 className="text-2xl font-bold text-center text-slate-100 mb-8">Prediction Result</h2>
+                    <div className="flex justify-center mb-6">
+                        <span className="badge text-xs px-4 py-1.5"
+                              style={{background: getRiskColors(data.top.risk).bg, color: getRiskColors(data.top.risk).text, border: `1px solid ${getRiskColors(data.top.risk).border}`}}>
+                            {data.top.risk} Risk
+                        </span>
+                    </div>
+                    <div className="text-center mb-6">
+                        <p className="text-sm text-slate-500 mb-1">Primary Detection</p>
+                        <p className="text-2xl font-black gradient-text">{data.top.full_name}</p>
+                    </div>
+                    <div className="text-center mb-2">
+                        <p className="text-sm text-slate-400 mb-2">
+                            Confidence: <span className="font-bold" style={{color: getConfColors(data.top.confidence).text}}>{data.top.confidence}%</span>
+                        </p>
+                    </div>
+                    <div className="progress-bar-track h-3 mb-2">
+                        <div className="progress-bar-fill h-3" style={{width: `${data.bar_width}%`, background: getConfColors(data.top.confidence).gradient}}></div>
+                    </div>
+                    <p className="text-center text-xs mb-8" style={{color: getConfColors(data.top.confidence).text}}>{data.confidence_label}</p>
+                    {data.low_confidence && (
+                        <div className="p-4 rounded-xl text-sm font-semibold text-center mb-8"
+                             style={{background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.12)', color: '#f87171'}}>
+                            <i className="fas fa-triangle-exclamation mr-2"></i>
+                            Low confidence — image may be unclear. Please retake with better lighting.
+                        </div>
+                    )}
+                    <h3 className="text-lg font-bold text-slate-200 mb-4">Top 3 Predictions</h3>
+                    <div className="space-y-4">
+                        {data.results.map((result, i) => (
+                            <div key={i}>
+                                <div className="flex justify-between text-sm font-semibold mb-1">
+                                    <span className="flex items-center gap-2 text-slate-300">
+                                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
+                                              style={{background: i === 0 ? 'linear-gradient(135deg, #06d6a0, #38bdf8)' : 'rgba(255,255,255,0.06)', color: i === 0 ? 'white' : '#94a3b8'}}>
+                                            #{i + 1}
+                                        </span>
+                                        {result.full_name}
+                                    </span>
+                                    <span className="text-slate-500">{result.confidence}%</span>
+                                </div>
+                                <div className="progress-bar-track h-2">
+                                    <div className="progress-bar-fill h-2"
+                                         style={{width: `${result.confidence}%`, background: i === 0 ? 'linear-gradient(90deg, #06d6a0, #38bdf8)' : 'rgba(148,163,184,0.2)'}}>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="mt-8 p-4 rounded-xl text-sm font-medium text-center"
+                         style={{background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.1)', color: 'rgba(56,189,248,0.7)'}}>
+                        <i className="fas fa-circle-info mr-2"></i>
+                        AI-assisted prediction only — <strong>not a medical diagnosis</strong>. Always consult a certified dermatologist.
+                    </div>
+                </div>
+            )}
+
+            {errorData && (
+                <div className="mt-8 p-5 rounded-xl text-center font-semibold"
+                     style={{background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.15)', color: '#f87171'}}>
+                    <i className="fas fa-circle-exclamation mr-2"></i>
+                    {errorData.error}
+                </div>
+            )}
+        </div>
+    );
+}
+
+const skinRoot = ReactDOM.createRoot(document.getElementById('skin-root'));
+skinRoot.render(<SkinDetection />);
+</script>
+{% endverbatim %}
+
 {% endblock %}
