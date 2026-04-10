@@ -7,48 +7,117 @@
 {% verbatim %}
 <script type="text/babel">
 function StressAnalyzer() {
-    const [selectedCards, setSelectedCards] = React.useState([]);
+    const [inputText, setInputText]         = React.useState('');
     const [analyzed, setAnalyzed]           = React.useState(false);
-    const [stressScore, setStressScore]     = React.useState(0);
+    const [loading, setLoading]             = React.useState(false);
+    const [error, setError]                 = React.useState('');
+    const [result, setResult]               = React.useState(null);
     const [animatedScore, setAnimatedScore] = React.useState(0);
 
-    const questions = [
-        { id: 1, icon: 'fa-moon',          title: 'Sleep Quality',    weight: 25, color: '#8b5cf6', desc: 'Did you wake up feeling rested or exhausted?'                       },
-        { id: 2, icon: 'fa-brain',         title: 'Cognitive Load',   weight: 30, color: '#38bdf8', desc: 'Difficulty focusing or "brain fog" experienced today?'              },
-        { id: 3, icon: 'fa-heart-pulse',   title: 'Physical Tension', weight: 20, color: '#f43f5e', desc: 'Tightness in shoulders, neck, or jaw?'                             },
-        { id: 4, icon: 'fa-bolt-lightning',title: 'Irritability',     weight: 15, color: '#fb923c', desc: 'Lower patience levels than usual with minor tasks?'                },
-        { id: 5, icon: 'fa-face-tired',    title: 'Energy Levels',    weight: 20, color: '#06d6a0', desc: 'Feeling drained despite adequate rest?'                            },
-        { id: 6, icon: 'fa-utensils',      title: 'Appetite Changes', weight: 10, color: '#fbbf24', desc: 'Unusual eating patterns — over or under eating?'                   },
-    ];
+    // ── CSRF helper (Django) ──────────────────────────────────────
+    const getCookie = (name) => {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            for (const cookie of document.cookie.split(';')) {
+                const c = cookie.trim();
+                if (c.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(c.slice(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    };
 
-    const toggleCard  = (id) => { setSelectedCards(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]); setAnalyzed(false); };
-
-    const analyzeStress = () => {
-        const totalWeight = questions.filter(q => selectedCards.includes(q.id)).reduce((s, q) => s + q.weight, 0);
-        const maxWeight   = questions.reduce((s, q) => s + q.weight, 0);
-        const score       = Math.round((totalWeight / maxWeight) * 100);
-        setStressScore(score);
-        setAnalyzed(true);
+    // ── Score animation ───────────────────────────────────────────
+    const animateTo = (target) => {
         let current = 0;
         const timer = setInterval(() => {
             current += 2;
-            if (current >= score) { setAnimatedScore(score); clearInterval(timer); }
+            if (current >= target) { setAnimatedScore(target); clearInterval(timer); }
             else setAnimatedScore(current);
         }, 20);
     };
 
-    const getStressLevel = (score) => {
-        if (score <= 25) return { label: 'Low',      color: '#34d399', desc: 'Your stress levels are well managed. Keep it up!'                    };
-        if (score <= 50) return { label: 'Moderate', color: '#fbbf24', desc: 'Consider some relaxation techniques and mindfulness.'                };
-        if (score <= 75) return { label: 'High',     color: '#fb923c', desc: 'Take a break. Consider deep breathing and a walk.'                   };
-        return             { label: 'Critical', color: '#f43f5e', desc: 'Please prioritize rest. Consider professional support.'              };
+    // ── Submit to Django view ─────────────────────────────────────
+    const analyzeStress = async () => {
+        if (!inputText.trim()) return;
+        setLoading(true);
+        setError('');
+        setAnalyzed(false);
+        setAnimatedScore(0);
+
+        try {
+            const res = await fetch(window.location.pathname, {
+                method:  'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken':  getCookie('csrftoken'),
+                },
+                body: JSON.stringify({ text: inputText }),
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || `Server error ${res.status}`);
+            }
+
+            const data = await res.json();
+            setResult(data);
+            setAnalyzed(true);
+            animateTo(data.score);
+        } catch (e) {
+            setError(e.message || 'Something went wrong. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) analyzeStress();
+    };
+
+    const reset = () => {
+        setInputText('');
+        setAnalyzed(false);
+        setResult(null);
+        setAnimatedScore(0);
+        setError('');
+    };
+
+    // ── Radar ring helpers ────────────────────────────────────────
+    const radarColor     = analyzed && result ? result.color : 'rgba(56,189,248,0.2)';
     const circumference  = 2 * Math.PI * 70;
     const strokeOffset   = circumference - (animatedScore / 100) * circumference;
 
+    // ── Probability bar list ──────────────────────────────────────
+    const LABEL_DISPLAY = {
+        no_stress:       'No Stress',
+        coping:          'Coping',
+        moderate_stress: 'Moderate Stress',
+        high_stress:     'High Stress',
+        burnout:         'Burnout',
+    };
+    const LABEL_COLOR = {
+        no_stress:       '#34d399',
+        coping:          '#38bdf8',
+        moderate_stress: '#fbbf24',
+        high_stress:     '#fb923c',
+        burnout:         '#f43f5e',
+    };
+
+    // Suggested prompts shown before first analysis
+    const SUGGESTIONS = [
+        "I haven't been able to sleep and keep overthinking everything",
+        "Feeling overwhelmed with deadlines and can't seem to focus",
+        "Pretty calm today, finished tasks and had a good meal",
+        "Completely exhausted — been running on empty for weeks",
+    ];
+
     return (
         <main className="max-w-7xl mx-auto px-6 py-16">
+
+            {/* ── Hero ─────────────────────────────────────────── */}
             <div className="grid lg:grid-cols-2 gap-16 items-center mb-24">
                 <div className="anim-slide-left">
                     <span className="badge badge-orange mb-6">Mental Wellness Module</span>
@@ -70,81 +139,163 @@ function StressAnalyzer() {
                                 <i className="fas fa-plus text-[8px] text-slate-400"></i>
                             </div>
                         </div>
-                        <p className="text-xs text-slate-500">Used by <span className="text-slate-200 font-bold">2,400+ users</span> for mental health tracking.</p>
                     </div>
                 </div>
 
+                {/* ── Stress Level Radar ─────────────────────── */}
                 <div className="anim-slide-right anim-delay-200">
                     <div className="glass-card p-8 rounded-3xl" style={{cursor: 'default'}}>
                         <div className="flex justify-between items-center mb-10">
                             <h3 className="font-bold text-slate-200">Stress Level Radar</h3>
                             <span className="badge text-[9px] px-2 py-1" style={{
                                 background: analyzed ? 'rgba(6,214,160,0.12)' : 'rgba(148,163,184,0.12)',
-                                color: analyzed ? '#06d6a0' : '#94a3b8',
-                                border: `1px solid ${analyzed ? 'rgba(6,214,160,0.2)' : 'rgba(148,163,184,0.2)'}`
+                                color:      analyzed ? '#06d6a0'              : '#94a3b8',
+                                border:     `1px solid ${analyzed ? 'rgba(6,214,160,0.2)' : 'rgba(148,163,184,0.2)'}`,
                             }}>
-                                {analyzed ? 'ANALYZED' : 'AWAITING INPUT'}
+                                {loading ? 'ANALYZING…' : analyzed ? 'ANALYZED' : 'AWAITING INPUT'}
                             </span>
                         </div>
+
                         <div className="flex justify-center">
                             <div className="relative w-48 h-48">
                                 <svg className="w-48 h-48 -rotate-90" viewBox="0 0 160 160">
                                     <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8"/>
                                     <circle cx="80" cy="80" r="70" fill="none"
-                                            stroke={analyzed ? getStressLevel(stressScore).color : 'rgba(56,189,248,0.2)'}
+                                            stroke={radarColor}
                                             strokeWidth="8" strokeLinecap="round"
                                             strokeDasharray={circumference}
                                             strokeDashoffset={analyzed ? strokeOffset : circumference}
                                             style={{transition: 'stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1)'}}/>
                                 </svg>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-4xl font-black" style={{color: analyzed ? getStressLevel(stressScore).color : '#94a3b8'}}>
-                                        {analyzed ? animatedScore : '—'}%
-                                    </span>
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
-                                        {analyzed ? getStressLevel(stressScore).label : 'Baseline'}
-                                    </p>
+                                    {loading ? (
+                                        <i className="fas fa-spinner fa-spin text-2xl text-slate-400"></i>
+                                    ) : (
+                                        <>
+                                            <span className="text-4xl font-black" style={{color: analyzed ? radarColor : '#94a3b8'}}>
+                                                {analyzed ? `${animatedScore}%` : '—'}
+                                            </span>
+                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+                                                {analyzed && result ? result.label_display : 'Baseline'}
+                                            </p>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
-                        {analyzed && (
+
+                        {/* Advice banner */}
+                        {analyzed && result && (
                             <div className="mt-6 p-4 rounded-xl text-center text-sm"
-                                 style={{background: `${getStressLevel(stressScore).color}10`, border: `1px solid ${getStressLevel(stressScore).color}20`, color: getStressLevel(stressScore).color}}>
-                                {getStressLevel(stressScore).desc}
+                                 style={{background: `${result.color}10`, border: `1px solid ${result.color}20`, color: result.color}}>
+                                {result.advice.replace(/^[^\w]+/, '')}
+                            </div>
+                        )}
+
+                        {/* Probability breakdown */}
+                        {analyzed && result && result.probabilities && (
+                            <div className="mt-4 space-y-2">
+                                {Object.entries(result.probabilities)
+                                    .sort(([,a],[,b]) => b - a)
+                                    .map(([cls, pct]) => (
+                                    <div key={cls} className="flex items-center gap-2">
+                                        <span className="text-[10px] text-slate-400 w-28 shrink-0">{LABEL_DISPLAY[cls] || cls}</span>
+                                        <div className="flex-1 h-1.5 rounded-full" style={{background: 'rgba(255,255,255,0.06)'}}>
+                                            <div className="h-1.5 rounded-full transition-all duration-700"
+                                                 style={{width: `${pct}%`, background: LABEL_COLOR[cls] || '#94a3b8'}}></div>
+                                        </div>
+                                        <span className="text-[10px] text-slate-500 w-8 text-right">{pct}%</span>
+                                    </div>
+                                ))}
                             </div>
                         )}
                     </div>
                 </div>
             </div>
 
+            {/* ── Quick Assessment — free-text input ───────────── */}
             <section className="glass-card p-12 rounded-3xl anim-fade-in-up" style={{cursor: 'default'}}>
-                <div className="max-w-4xl mx-auto">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl font-bold text-slate-100 mb-2" style={{fontFamily: 'Outfit, sans-serif'}}>Quick Assessment</h2>
-                        <p className="text-slate-500 italic">Select the cards that best describe your last 24 hours</p>
+                <div className="max-w-3xl mx-auto">
+                    <div className="text-center mb-10">
+                        <h2 className="text-3xl font-bold text-slate-100 mb-2" style={{fontFamily: 'Outfit, sans-serif'}}>
+                            Quick Assessment
+                        </h2>
+                        <p className="text-slate-500 italic">
+                            Describe how you've been feeling in your own words — our NLP model will do the rest
+                        </p>
                     </div>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                        {questions.map((q) => (
-                            <div key={q.id}
-                                 className={`assessment-option p-6 rounded-2xl cursor-pointer ${selectedCards.includes(q.id) ? 'active' : ''}`}
-                                 onClick={() => toggleCard(q.id)}>
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background: `${q.color}15`}}>
-                                        <i className={`fas ${q.icon}`} style={{color: q.color}}></i>
-                                    </div>
-                                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition ${selectedCards.includes(q.id) ? 'border-cyan-400 bg-cyan-400/20' : 'border-slate-700'}`}>
-                                        {selectedCards.includes(q.id) && <i className="fas fa-check text-[8px] text-cyan-400"></i>}
-                                    </div>
-                                </div>
-                                <h4 className="font-bold text-slate-200 mb-2">{q.title}</h4>
-                                <p className="text-xs text-slate-500">{q.desc}</p>
+
+                    {/* Text area */}
+                    <div className="relative mb-4">
+                        <textarea
+                            value={inputText}
+                            onChange={(e) => { setInputText(e.target.value); setError(''); }}
+                            onKeyDown={handleKeyDown}
+                            placeholder="e.g. I haven't slept well, I feel overwhelmed and my mind keeps racing…"
+                            rows={5}
+                            className="w-full rounded-2xl px-5 py-4 text-sm text-slate-200 resize-none outline-none"
+                            style={{
+                                background:  'rgba(255,255,255,0.04)',
+                                border:      '1px solid rgba(255,255,255,0.08)',
+                                lineHeight:  '1.7',
+                                caretColor:  '#38bdf8',
+                            }}
+                        />
+                        <p className="absolute bottom-3 right-4 text-[10px] text-slate-600 select-none">
+                            Ctrl+Enter to submit
+                        </p>
+                    </div>
+
+                    {/* Character hint */}
+                    <p className="text-[11px] text-slate-600 mb-5 text-right">{inputText.length} chars</p>
+
+                    {/* Suggested prompts */}
+                    {!analyzed && (
+                        <div className="mb-8">
+                            <p className="text-[11px] text-slate-500 mb-3 uppercase tracking-widest">Try a prompt →</p>
+                            <div className="flex flex-wrap gap-2">
+                                {SUGGESTIONS.map((s, i) => (
+                                    <button key={i}
+                                            onClick={() => setInputText(s)}
+                                            className="text-[11px] px-3 py-1.5 rounded-lg text-slate-400 transition hover:text-slate-200"
+                                            style={{background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)'}}>
+                                        "{s.length > 48 ? s.slice(0, 48) + '…' : s}"
+                                    </button>
+                                ))}
                             </div>
-                        ))}
+                        </div>
+                    )}
+
+                    {/* Error */}
+                    {error && (
+                        <div className="mb-5 p-3 rounded-xl text-sm text-red-400"
+                             style={{background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.15)'}}>
+                            <i className="fas fa-triangle-exclamation mr-2"></i>{error}
+                        </div>
+                    )}
+
+                    {/* Action buttons */}
+                    <div className="flex gap-3">
+                        <button
+                            onClick={analyzeStress}
+                            disabled={!inputText.trim() || loading}
+                            className="btn-primary flex-1 py-5 rounded-2xl text-base font-bold disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                            {loading
+                                ? <span><i className="fas fa-spinner fa-spin mr-2"></i>Analyzing…</span>
+                                : <span>Analyze Mental State <i className="fas fa-arrow-right ml-2"></i></span>
+                            }
+                        </button>
+
+                        {analyzed && (
+                            <button
+                                onClick={reset}
+                                className="py-5 px-6 rounded-2xl text-sm font-semibold text-slate-400 transition hover:text-slate-200"
+                                style={{background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)'}}>
+                                <i className="fas fa-rotate-left mr-1"></i> Reset
+                            </button>
+                        )}
                     </div>
-                    <button onClick={analyzeStress} disabled={selectedCards.length === 0}
-                            className="btn-primary w-full py-5 rounded-2xl text-base font-bold disabled:opacity-30 disabled:cursor-not-allowed">
-                        <span>Analyze Mental Exhaustion <i className="fas fa-arrow-right ml-2"></i></span>
-                    </button>
                 </div>
             </section>
         </main>

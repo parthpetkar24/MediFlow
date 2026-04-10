@@ -4,6 +4,7 @@ import sys
 import os
 import math
 import numpy as np
+import joblib                          # ← NEW: for model persistence
 from collections import defaultdict, Counter
 
 # ─────────────────────────────────────────────
@@ -278,8 +279,53 @@ def predict_sentence(text: str, vectorizer: TFIDFVectorizer,
     print(f"\n  → [{label.upper()}]")
     print(f"  {ADVICE.get(label, '')}")
 
+
 # ─────────────────────────────────────────────
-# 8.  INTERACTIVE LOOP
+# 8.  NEW: PREDICT FROM TEXT  (for Django views)
+# ─────────────────────────────────────────────
+def predict_from_text(text: str, vectorizer: TFIDFVectorizer,
+                      model: NaiveBayesClassifier) -> dict:
+    """
+    Returns a dict with:
+        label       – predicted stress class  (e.g. 'high_stress')
+        score       – 0-100 stress score mapped from the predicted probability
+        probabilities – {class: probability_pct, ...}
+        advice      – human-readable recommendation string
+    """
+    tokens   = preprocess(text)
+    features = featurize(tokens)
+    X        = vectorizer.transform([features])
+    label    = model.predict(X)[0]
+    proba    = model.predict_proba(X)[0]
+
+    # Map label → a 0-100 stress score
+    SCORE_MAP = {
+        "no_stress":       10,
+        "coping":          35,
+        "moderate_stress": 55,
+        "high_stress":     80,
+        "burnout":         95,
+    }
+
+    # Weighted average score across all classes
+    score = int(sum(
+        SCORE_MAP.get(cls, 50) * float(p)
+        for cls, p in zip(model.classes_, proba)
+    ))
+
+    return {
+        "label":         label,
+        "score":         score,
+        "probabilities": {
+            cls: round(float(p) * 100, 1)
+            for cls, p in zip(model.classes_, proba)
+        },
+        "advice": ADVICE.get(label, ""),
+    }
+
+
+# ─────────────────────────────────────────────
+# 9.  INTERACTIVE LOOP
 # ─────────────────────────────────────────────
 def interactive_loop(vectorizer, model):
     print("\n" + "=" * 68)
@@ -296,8 +342,51 @@ def interactive_loop(vectorizer, model):
         if text:
             predict_sentence(text, vectorizer, model)
 
+
 # ─────────────────────────────────────────────
-# 9.  MAIN
+# 10.  MODEL SAVE / LOAD  (joblib)
+# ─────────────────────────────────────────────
+# Default paths — override via env vars if needed
+_DEFAULT_MODEL_DIR  = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                   "stress_model")
+
+STRESS_VECTORIZER_PATH = os.environ.get(
+    "STRESS_VECTORIZER_PATH",
+    os.path.join(_DEFAULT_MODEL_DIR, "stress_vectorizer.pkl")
+)
+STRESS_MODEL_PATH = os.environ.get(
+    "STRESS_MODEL_PATH",
+    os.path.join(_DEFAULT_MODEL_DIR, "stress_model.pkl")
+)
+
+
+def save_model(vectorizer: TFIDFVectorizer, model: NaiveBayesClassifier,
+               vectorizer_path: str = STRESS_VECTORIZER_PATH,
+               model_path: str      = STRESS_MODEL_PATH) -> None:
+    """Persist the trained vectorizer and classifier to disk using joblib."""
+    os.makedirs(os.path.dirname(vectorizer_path), exist_ok=True)
+    joblib.dump(vectorizer, vectorizer_path)
+    joblib.dump(model,      model_path)
+    print(f"  ✓ Vectorizer saved → {vectorizer_path}")
+    print(f"  ✓ Model saved      → {model_path}")
+
+
+def load_model(vectorizer_path: str = STRESS_VECTORIZER_PATH,
+               model_path: str      = STRESS_MODEL_PATH):
+    """Load a previously saved vectorizer + classifier from disk."""
+    if not os.path.isfile(vectorizer_path):
+        raise FileNotFoundError(f"Vectorizer not found: {vectorizer_path}")
+    if not os.path.isfile(model_path):
+        raise FileNotFoundError(f"Model not found: {model_path}")
+    vectorizer = joblib.load(vectorizer_path)
+    model      = joblib.load(model_path)
+    print(f"  ✓ Vectorizer loaded ← {vectorizer_path}")
+    print(f"  ✓ Model loaded      ← {model_path}")
+    return vectorizer, model
+
+
+# ─────────────────────────────────────────────
+# 11.  MAIN
 # ─────────────────────────────────────────────
 def main():
     print("=" * 68)
@@ -360,6 +449,9 @@ def main():
     # ── evaluate ──────────────────────────────
     y_pred = model.predict(X_test)
     accuracy = print_report(y_test, y_pred, model.classes_)
+
+    # ── NEW: save model to disk ────────────────
+    save_model(vectorizer, model)
 
     # ── sample test predictions ───────────────
     print("\n  SAMPLE TEST SET PREDICTIONS")
