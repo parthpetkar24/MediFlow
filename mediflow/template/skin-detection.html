@@ -8,6 +8,15 @@
 </script>
 {% endif %}
 
+{% if skin_info %}
+<script id="skin-info-data" type="application/json">
+{
+    "description": "{{ skin_info.description|escapejs }}",
+    "medication":  "{{ skin_info.medication|escapejs }}"
+}
+</script>
+{% endif %}
+
 {% if error %}
 <script id="skin-error-data" type="application/json">{"error": "{{ error }}"}</script>
 {% endif %}
@@ -32,6 +41,8 @@ function SkinDetection() {
     const data      = resultsEl ? JSON.parse(resultsEl.textContent) : null;
     const errorEl   = document.getElementById('skin-error-data');
     const errorData = errorEl ? JSON.parse(errorEl.textContent) : null;
+    const infoEl    = document.getElementById('skin-info-data');
+    const skinInfo  = infoEl ? JSON.parse(infoEl.textContent) : null;
 
     React.useEffect(() => {
         if (data && resultsRef.current) {
@@ -103,6 +114,7 @@ function SkinDetection() {
                 </div>
             </form>
 
+            {/* ── Prediction results ── */}
             {data && (
                 <div ref={resultsRef} className="glass-card p-10 rounded-3xl mt-10 anim-fade-in-up" style={{cursor: 'default'}}>
                     <h2 className="text-2xl font-bold text-center text-slate-100 mb-8">Prediction Result</h2>
@@ -159,6 +171,45 @@ function SkinDetection() {
                         <i className="fas fa-circle-info mr-2"></i>
                         AI-assisted prediction only — <strong>not a medical diagnosis</strong>. Always consult a certified dermatologist.
                     </div>
+                </div>
+            )}
+
+            {/* ── Skin Disease Info Card (description + remedy) ── */}
+            {skinInfo && (
+                <div className="glass-card p-10 rounded-3xl mt-6 anim-fade-in-up" style={{cursor: 'default'}}>
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                             style={{background: 'rgba(56,189,248,0.12)'}}>
+                            <i className="fas fa-book-medical text-sky-400 text-lg"></i>
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-100">About This Condition</h3>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-sm text-slate-400 leading-relaxed mb-8">
+                        {skinInfo.description}
+                    </p>
+
+                    {/* Remedy */}
+                    {skinInfo.medication && (
+                        <div>
+                            <p className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-3">
+                                <i className="fas fa-pills mr-1.5 text-sky-400"></i>
+                                Suggested Treatment
+                            </p>
+                            <div className="flex items-start gap-3 p-4 rounded-xl"
+                                 style={{background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.1)'}}>
+                                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                                     style={{background: 'rgba(56,189,248,0.15)'}}>
+                                    <i className="fas fa-capsules text-xs text-sky-400"></i>
+                                </div>
+                                <p className="text-sm text-slate-300 leading-relaxed">{skinInfo.medication}</p>
+                            </div>
+                            <p className="text-xs text-slate-600 mt-4 text-center italic">
+                                Always consult a certified dermatologist before starting any treatment.
+                            </p>
+                        </div>
+                    )}
                 </div>
             )}
 
