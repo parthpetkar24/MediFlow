@@ -7,11 +7,16 @@ import torch
 import joblib
 from torchvision import transforms
 from PIL import Image
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.http import JsonResponse
 from django.conf import settings
 from django.views.decorators.http import require_POST
 from skin_model.model import SkinCNN
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import UserProfile, SkinDiseaseHistory, DiseaseHistory, StressHistory
 
 # ── Absolute paths anchored to the home app directory ──────────────────────────
 APP_DIR     = os.path.dirname(os.path.abspath(__file__))   # → .../home/
@@ -94,34 +99,25 @@ STRESS_ANALYZER_PY     = os.path.join(STRESS_MODEL_DIR, 'stress_analyzer.py')
 STRESS_VECTORIZER_PATH = os.path.join(STRESS_MODEL_DIR, 'stress_model','stress_vectorizer.pkl')
 STRESS_MODEL_PATH_FILE = os.path.join(STRESS_MODEL_DIR, 'stress_model','stress_model.pkl')
  
-# Step 1 – load the module by absolute path so we get the real classes.
 _spec   = importlib.util.spec_from_file_location("stress_analyzer", STRESS_ANALYZER_PY)
 _sa_mod = importlib.util.module_from_spec(_spec)
  
-# Step 2 – register it under BOTH "stress_analyzer" AND "__main__".
-#   The .pkl files were pickled while the script ran as __main__, so Python
-#   stored class references as  __main__.TFIDFVectorizer  etc.
-#   joblib.load later calls  pickle.find_class("__main__", "TFIDFVectorizer")
-#   which resolves via sys.modules["__main__"].  We temporarily replace
-#   __main__ with our module so unpickling succeeds, then restore it.
 sys.modules["stress_analyzer"] = _sa_mod
 _real_main = sys.modules.get("__main__")
-sys.modules["__main__"] = _sa_mod          # ← key fix
+sys.modules["__main__"] = _sa_mod         
  
-_spec.loader.exec_module(_sa_mod)          # actually run the module code
+_spec.loader.exec_module(_sa_mod)          
  
-# Step 3 – load the pickled artefacts while __main__ still points to _sa_mod.
 stress_vectorizer = joblib.load(STRESS_VECTORIZER_PATH)
 stress_clf        = joblib.load(STRESS_MODEL_PATH_FILE)
- 
-# Step 4 – restore __main__ so Django is not confused at runtime.
+
 if _real_main is not None:
     sys.modules["__main__"] = _real_main
  
 # Grab the inference helper.
 predict_from_text = _sa_mod.predict_from_text
  
-# Human-readable label -> display name / colour
+# Human-readable label 
 STRESS_LABEL_DISPLAY = {
     "no_stress":       "No Stress",
     "coping":          "Coping",
@@ -207,7 +203,96 @@ def get_started(request):
     return render(request, 'get-started.html')
 
 def signup(request):
+    if request.user.is_authenticated:
+        return redirect('index')
+
+    if request.method == 'POST':
+        # ── Pull fields (matching the new signup.html hidden inputs) ──
+        first_name    = request.POST.get('first_name',    '').strip()
+        last_name     = request.POST.get('last_name',     '').strip()
+        email         = request.POST.get('email',         '').strip()
+        password      = request.POST.get('password',      '').strip()
+
+        # Optional profile fields
+        phone         = request.POST.get('phone',         '').strip() or None
+        date_of_birth = request.POST.get('date_of_birth', '').strip() or None
+        gender        = request.POST.get('gender',        '').strip() or None
+        blood_group   = request.POST.get('blood_group',   '').strip() or None
+
+        # ── Server-side validation ─────────────────────────────────────
+        if not first_name or not email or not password:
+            messages.error(request, 'First name, email and password are required.')
+            return render(request, 'signup.html')
+
+        if len(password) < 8:
+            messages.error(request, 'Password must be at least 8 characters.')
+            return render(request, 'signup.html')
+
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'An account with this email already exists.')
+            return render(request, 'signup.html')
+
+        # ── Create Django User ─────────────────────────────────────────
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+        )
+
+        # ── Create / populate UserProfile ──────────────────────────────
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        profile.phone       = phone
+        profile.gender      = gender
+        profile.blood_group = blood_group
+
+        if date_of_birth:
+            from datetime import datetime
+            try:
+                profile.date_of_birth = datetime.strptime(date_of_birth, '%Y-%m-%d').date()
+            except ValueError:
+                pass
+
+        profile.save()
+
+        # ── Auto login and redirect ────────────────────────────────────
+        login(request, user)
+        messages.success(request, f'Welcome to MediFlow, {user.first_name}!')
+        return redirect('index')
+
     return render(request, 'signup.html')
+
+
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('index')
+
+    if request.method == 'POST':
+        email    = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '').strip()
+
+        if not email or not password:
+            messages.error(request, 'Email and password are required.')
+            return render(request, 'login.html')
+
+        user = authenticate(request, username=email, password=password)
+
+        if user is not None:
+            login(request, user)
+            messages.success(request, f'Welcome back, {user.first_name or user.email}!')
+            next_url = request.GET.get('next', 'index')
+            return redirect(next_url)
+        else:
+            messages.error(request, 'Invalid email or password.')
+
+    return render(request, 'login.html')
+
+
+def logout_view(request):
+    logout(request)
+    messages.success(request, 'You have been logged out.')
+    return redirect('index')
 
 def health_tips(request):
     return render(request, 'health-tips.html')
@@ -224,6 +309,17 @@ def stress_analyser(request):
             return JsonResponse({'error': 'Please enter some text.'}, status=400)
  
         result = predict_from_text(user_text, stress_vectorizer, stress_clf)
+        if request.user.is_authenticated:
+            StressHistory.objects.create(
+            user=request.user,
+            input_text=user_text,
+            label=result['label'],
+            label_display=STRESS_LABEL_DISPLAY.get(result['label'], result['label']),
+            score=result['score'],
+            advice=result.get('advice', ''),
+            color=STRESS_LABEL_COLOR.get(result['label'], '#94a3b8'),
+            probabilities=result.get('probabilities', {}),
+        )
  
         return JsonResponse({
             'label':         result['label'],
@@ -238,7 +334,7 @@ def stress_analyser(request):
 
 def disease_predictor(request):
     context = {'all_symptoms': sorted(VALID_SYMPTOMS)}
-
+    
     if request.method == 'POST':
         symptoms = request.POST.getlist('symptoms')
         # Strip out anything not in the training vocabulary
@@ -270,6 +366,14 @@ def disease_predictor(request):
                 'confidence'       : confidence,
                 'top_diseases'     : top_diseases,
             })
+            if request.user.is_authenticated:
+                DiseaseHistory.objects.create(
+                user=request.user,
+                symptoms=symptoms,
+                predicted_disease=disease,
+                confidence=confidence,
+                top_diseases=top_diseases,
+                )
         except Exception as e:
             context['need_more'] = True
 
@@ -287,6 +391,15 @@ def skin_disease_predictor(request):
             top      = results[0]
 
             context['results']   = results
+            if request.user.is_authenticated:
+                SkinDiseaseHistory.objects.create(
+                user=request.user,
+                predicted_label=top['label'],
+                full_name=top['full_name'],
+                confidence=top['confidence'],
+                risk_level=top['risk'],
+                top_results=results,
+            )
             context['top']       = top
             context['bar_width'] = int(top['confidence'])
 
@@ -320,3 +433,33 @@ def skin_disease_predictor(request):
             context['error'] = f'Error processing image: {str(e)}'
 
     return render(request, 'skin-detection.html', context)
+
+@login_required(login_url='/login/')
+def history_overview(request):
+    context = {
+        'skin_count':    SkinDiseaseHistory.objects.filter(user=request.user).count(),
+        'disease_count': DiseaseHistory.objects.filter(user=request.user).count(),
+        'stress_count':  StressHistory.objects.filter(user=request.user).count(),
+        'recent_skin':   SkinDiseaseHistory.objects.filter(user=request.user)[:3],
+        'recent_disease':DiseaseHistory.objects.filter(user=request.user)[:3],
+        'recent_stress': StressHistory.objects.filter(user=request.user)[:3],
+    }
+    return render(request, 'overview.html', context)
+
+
+@login_required(login_url='/login/')
+def skin_history(request):
+    records = SkinDiseaseHistory.objects.filter(user=request.user)
+    return render(request, 'skin_history.html', {'records': records})
+
+
+@login_required(login_url='/login/')
+def disease_history_view(request):
+    records = DiseaseHistory.objects.filter(user=request.user)
+    return render(request, 'disease_history.html', {'records': records})
+
+
+@login_required(login_url='/login/')
+def stress_history_view(request):
+    records = StressHistory.objects.filter(user=request.user)
+    return render(request, 'stress_history.html', {'records': records})

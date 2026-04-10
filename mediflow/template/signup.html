@@ -12,6 +12,18 @@
     <link rel="stylesheet" href="{% static 'style.css' %}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        .step-indicator.active  { background: linear-gradient(135deg, #06d6a0, #38bdf8); color: #fff; }
+        .step-indicator.done    { background: rgba(6,214,160,0.2); color: #06d6a0; border: 1px solid rgba(6,214,160,0.4); }
+        .step-indicator.pending { background: rgba(255,255,255,0.04); color: #475569; border: 1px solid rgba(255,255,255,0.07); }
+        .step-line.done         { background: linear-gradient(90deg, #06d6a0, #38bdf8); }
+        .step-line.pending      { background: rgba(255,255,255,0.07); }
+
+        select.input-glass option { background: #0f1218; color: #e2e8f0; }
+
+        /* Date picker icon color fix for dark theme */
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
+    </style>
 </head>
 <body>
     <div class="mesh-bg">
@@ -21,25 +33,91 @@
     </div>
 
     <script>
-        var _URLS = {
-            index: "{% url 'index' %}",
-            start: "{% url 'get_started' %}",
-        };
+        var _URLS = { index: "{% url 'index' %}", login: "{% url 'login' %}" };
+        var _CSRF = "{{ csrf_token }}";
+        var _MSG  = [{% for m in messages %}"{{ m }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+        var _TAGS = [{% for m in messages %}"{{ m.tags }}"{% if not forloop.last %},{% endif %}{% endfor %}];
     </script>
 
     <div id="signup-root" class="min-h-screen flex flex-col"></div>
 
     {% verbatim %}
     <script type="text/babel">
-    function SignupPage() {
-        const [formData,     setFormData]     = React.useState({ name: '', email: '', password: '' });
-        const [agreed,       setAgreed]       = React.useState(false);
-        const [focusedField, setFocusedField] = React.useState(null);
 
-        const handleChange = (field, value) => setFormData(prev => ({...prev, [field]: value}));
+    /* ─── Reusable input wrapper ─────────────────────────────────── */
+    function Field({ label, icon, focused, children }) {
+        return (
+            <div>
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">{label}</label>
+                <div className="relative mt-2">
+                    <i className={`fas ${icon} absolute left-4 top-1/2 -translate-y-1/2 text-sm transition pointer-events-none z-10
+                                   ${focused ? 'text-cyan-400' : 'text-slate-600'}`}></i>
+                    {children}
+                </div>
+            </div>
+        );
+    }
+
+    /* ─── Main Page ──────────────────────────────────────────────── */
+    function SignupPage() {
+        const [step,         setStep]         = React.useState(1);   // 1 = Account, 2 = Profile
+        const [focusedField, setFocusedField] = React.useState(null);
+        const [agreed,       setAgreed]       = React.useState(false);
+        const [showPass,     setShowPass]     = React.useState(false);
+        const [showConfirm,  setShowConfirm]  = React.useState(false);
+        const [errors,       setErrors]       = React.useState({});
+
+        /* form state */
+        const [form, setForm] = React.useState({
+            /* Step 1 — Account */
+            first_name:  '',
+            last_name:   '',
+            email:       '',
+            password:    '',
+            confirm_password: '',
+            /* Step 2 — Profile */
+            phone:         '',
+            date_of_birth: '',
+            gender:        '',
+            blood_group:   '',
+        });
+
+        const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+        /* ── Step-1 client-side validation ── */
+        function validateStep1() {
+            const e = {};
+            if (!form.first_name.trim())  e.first_name = 'First name is required.';
+            if (!form.last_name.trim())   e.last_name  = 'Last name is required.';
+            if (!form.email.trim())       e.email      = 'Email is required.';
+            else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Enter a valid email.';
+            if (!form.password)           e.password   = 'Password is required.';
+            else if (form.password.length < 8) e.password = 'Minimum 8 characters.';
+            if (form.password !== form.confirm_password) e.confirm_password = 'Passwords do not match.';
+            setErrors(e);
+            return Object.keys(e).length === 0;
+        }
+
+        function handleNext(e) {
+            e.preventDefault();
+            if (validateStep1()) setStep(2);
+        }
+
+        /* ── Step indicator config ── */
+        const steps = [
+            { n: 1, label: 'Account',  icon: 'fa-user-shield' },
+            { n: 2, label: 'Profile',  icon: 'fa-id-card'     },
+        ];
+
+        const hasError   = _TAGS.some(t => t.includes('error'));
+        const hasSuccess = _TAGS.some(t => t.includes('success'));
+
+        const inputCls = "input-glass pl-11 w-full";
 
         return (
             <div className="min-h-screen flex flex-col">
+
+                {/* ── Minimal nav ── */}
                 <nav className="p-8">
                     <a href={_URLS.index} className="flex items-center gap-3 no-underline">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center"
@@ -52,9 +130,26 @@
 
                 <main className="flex-grow flex items-center justify-center px-6 pb-12">
                     <div className="w-full max-w-lg">
-                        <div className="glass-card p-10 lg:p-12 rounded-3xl anim-fade-in-up" style={{cursor: 'default'}}>
-                            <div className="text-center mb-10">
-                                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
+                        <div className="glass-card p-10 lg:p-12 rounded-3xl anim-fade-in-up">
+
+                            {/* ── Django server messages ── */}
+                            {_MSG.length > 0 && (
+                                <div className="mb-6 p-4 rounded-2xl"
+                                     style={{
+                                         background: hasError ? 'rgba(244,63,94,0.1)' : 'rgba(6,214,160,0.1)',
+                                         border: `1px solid ${hasError ? 'rgba(244,63,94,0.3)' : 'rgba(6,214,160,0.4)'}`,
+                                     }}>
+                                    {_MSG.map((msg, i) => (
+                                        <p key={i} className={`text-sm flex items-center gap-2 ${hasError ? 'text-red-400' : 'text-emerald-400'}`}>
+                                            <i className={`fas ${hasError ? 'fa-exclamation-circle' : 'fa-check-circle'}`}></i> {msg}
+                                        </p>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* ── Header ── */}
+                            <div className="text-center mb-8">
+                                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
                                      style={{background: 'linear-gradient(135deg, rgba(6,214,160,0.15), rgba(56,189,248,0.15))'}}>
                                     <i className="fas fa-user-plus text-xl gradient-text"></i>
                                 </div>
@@ -62,61 +157,225 @@
                                 <p className="text-sm text-slate-500 mt-2">Begin your AI-powered health journey</p>
                             </div>
 
-                            <form action="#" className="space-y-5">
-                                {[
-                                    { field: 'name',     label: 'Full Name',       type: 'text',     placeholder: 'John Doe',       icon: 'fa-user'     },
-                                    { field: 'email',    label: 'Email Address',   type: 'email',    placeholder: 'john@email.com', icon: 'fa-envelope' },
-                                    { field: 'password', label: 'Password',        type: 'password', placeholder: '••••••••',       icon: 'fa-lock'     },
-                                ].map((input, i) => (
-                                    <div key={i}>
-                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">{input.label}</label>
-                                        <div className="relative mt-2">
-                                            <i className={`fas ${input.icon} absolute left-4 top-1/2 -translate-y-1/2 text-sm ${focusedField === input.field ? 'text-cyan-400' : 'text-slate-600'} transition`}></i>
-                                            <input type={input.type} placeholder={input.placeholder} value={formData[input.field]}
-                                                   onChange={(e) => handleChange(input.field, e.target.value)}
-                                                   onFocus={() => setFocusedField(input.field)}
-                                                   onBlur={() => setFocusedField(null)}
-                                                   className="input-glass pl-11" />
+                            {/* ── Step Indicators ── */}
+                            <div className="flex items-center justify-center gap-0 mb-8">
+                                {steps.map((s, i) => (
+                                    <React.Fragment key={s.n}>
+                                        <div className="flex flex-col items-center gap-1.5">
+                                            <div className={`step-indicator w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all
+                                                            ${step === s.n ? 'active' : step > s.n ? 'done' : 'pending'}`}>
+                                                {step > s.n
+                                                    ? <i className="fas fa-check text-xs"></i>
+                                                    : <i className={`fas ${s.icon} text-xs`}></i>}
+                                            </div>
+                                            <span className={`text-[10px] font-bold uppercase tracking-wider
+                                                             ${step === s.n ? 'text-cyan-400' : step > s.n ? 'text-emerald-400' : 'text-slate-600'}`}>
+                                                {s.label}
+                                            </span>
+                                        </div>
+                                        {i < steps.length - 1 && (
+                                            <div className={`step-line h-0.5 w-16 mx-3 mb-5 rounded-full transition-all ${step > s.n ? 'done' : 'pending'}`}></div>
+                                        )}
+                                    </React.Fragment>
+                                ))}
+                            </div>
+
+                            {/* ══════════════════════════════════════
+                                STEP 1 — Account Credentials
+                            ══════════════════════════════════════ */}
+                            {step === 1 && (
+                                <div className="space-y-4 anim-fade-in-up">
+
+                                    {/* First + Last Name row */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">First Name</label>
+                                            <div className="relative mt-2">
+                                                <i className={`fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-sm transition pointer-events-none
+                                                               ${focusedField === 'first_name' ? 'text-cyan-400' : 'text-slate-600'}`}></i>
+                                                <input type="text" placeholder="John" value={form.first_name}
+                                                       onChange={e => set('first_name', e.target.value)}
+                                                       onFocus={() => setFocusedField('first_name')}
+                                                       onBlur={() => setFocusedField(null)}
+                                                       className={inputCls} />
+                                            </div>
+                                            {errors.first_name && <p className="text-xs text-red-400 mt-1 ml-1">{errors.first_name}</p>}
+                                        </div>
+
+                                        <div>
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Last Name</label>
+                                            <div className="relative mt-2">
+                                                <i className={`fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-sm transition pointer-events-none
+                                                               ${focusedField === 'last_name' ? 'text-cyan-400' : 'text-slate-600'}`}></i>
+                                                <input type="text" placeholder="Doe" value={form.last_name}
+                                                       onChange={e => set('last_name', e.target.value)}
+                                                       onFocus={() => setFocusedField('last_name')}
+                                                       onBlur={() => setFocusedField(null)}
+                                                       className={inputCls} />
+                                            </div>
+                                            {errors.last_name && <p className="text-xs text-red-400 mt-1 ml-1">{errors.last_name}</p>}
                                         </div>
                                     </div>
-                                ))}
 
-                                <div className="flex items-center gap-3 py-2">
-                                    <input type="checkbox" checked={agreed} onChange={() => setAgreed(!agreed)}
-                                           className="w-4 h-4 rounded" style={{accentColor: '#06d6a0'}} />
-                                    <span className="text-[11px] text-slate-500 leading-tight">
-                                        I agree to the <a href="#" className="text-cyan-400 underline">Privacy Policy</a> regarding medical data encryption.
-                                    </span>
+                                    {/* Email */}
+                                    <Field label="Email Address" icon="fa-envelope" focused={focusedField === 'email'}>
+                                        <input type="email" placeholder="john@email.com" value={form.email}
+                                               onChange={e => set('email', e.target.value)}
+                                               onFocus={() => setFocusedField('email')}
+                                               onBlur={() => setFocusedField(null)}
+                                               className={inputCls} />
+                                        {errors.email && <p className="text-xs text-red-400 mt-1 ml-1">{errors.email}</p>}
+                                    </Field>
+
+                                    {/* Password */}
+                                    <Field label="Password" icon="fa-lock" focused={focusedField === 'password'}>
+                                        <input type={showPass ? 'text' : 'password'} placeholder="Min. 8 characters" value={form.password}
+                                               onChange={e => set('password', e.target.value)}
+                                               onFocus={() => setFocusedField('password')}
+                                               onBlur={() => setFocusedField(null)}
+                                               className={`${inputCls} pr-11`} />
+                                        <button type="button" onClick={() => setShowPass(!showPass)}
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-cyan-400 transition bg-transparent border-none cursor-pointer">
+                                            <i className={`fas ${showPass ? 'fa-eye-slash' : 'fa-eye'} text-sm`}></i>
+                                        </button>
+                                        {errors.password && <p className="text-xs text-red-400 mt-1 ml-1">{errors.password}</p>}
+                                    </Field>
+
+                                    {/* Confirm Password */}
+                                    <Field label="Confirm Password" icon="fa-shield-alt" focused={focusedField === 'confirm_password'}>
+                                        <input type={showConfirm ? 'text' : 'password'} placeholder="Re-enter password" value={form.confirm_password}
+                                               onChange={e => set('confirm_password', e.target.value)}
+                                               onFocus={() => setFocusedField('confirm_password')}
+                                               onBlur={() => setFocusedField(null)}
+                                               className={`${inputCls} pr-11`} />
+                                        <button type="button" onClick={() => setShowConfirm(!showConfirm)}
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-cyan-400 transition bg-transparent border-none cursor-pointer">
+                                            <i className={`fas ${showConfirm ? 'fa-eye-slash' : 'fa-eye'} text-sm`}></i>
+                                        </button>
+                                        {errors.confirm_password && <p className="text-xs text-red-400 mt-1 ml-1">{errors.confirm_password}</p>}
+                                    </Field>
+
+                                    {/* Agree checkbox */}
+                                    <div className="flex items-start gap-3 py-2">
+                                        <input type="checkbox" id="agree" checked={agreed} onChange={() => setAgreed(!agreed)}
+                                               className="w-4 h-4 rounded mt-0.5 flex-shrink-0" style={{accentColor: '#06d6a0'}} />
+                                        <label htmlFor="agree" className="text-[11px] text-slate-500 leading-relaxed cursor-pointer">
+                                            I agree to the <a href="#" className="text-cyan-400 underline">Terms of Service</a> and{' '}
+                                            <a href="#" className="text-cyan-400 underline">Privacy Policy</a> regarding medical data encryption.
+                                        </label>
+                                    </div>
+
+                                    {/* Next button */}
+                                    <button onClick={handleNext}
+                                            className="btn-primary w-full py-4 rounded-2xl text-base mt-2"
+                                            style={{opacity: agreed ? 1 : 0.45, pointerEvents: agreed ? 'auto' : 'none'}}>
+                                        <span>Continue to Profile</span>
+                                        <i className="fas fa-arrow-right ml-2 text-sm"></i>
+                                    </button>
                                 </div>
+                            )}
 
-                                <button type="submit" className="btn-primary w-full py-4 rounded-2xl text-base"
-                                        style={{opacity: agreed ? 1 : 0.5, pointerEvents: agreed ? 'auto' : 'none'}}>
-                                    <span>Create My Health Profile</span>
-                                </button>
-                            </form>
+                            {/* ══════════════════════════════════════
+                                STEP 2 — Health Profile
+                            ══════════════════════════════════════ */}
+                            {step === 2 && (
+                                <form action="" method="POST" className="space-y-4 anim-fade-in-up">
+                                    <input type="hidden" name="csrfmiddlewaretoken" value={_CSRF} />
 
-                            <div className="relative my-8">
-                                <div className="gradient-divider"></div>
-                                <div className="relative flex justify-center -mt-3">
-                                    <span className="px-4 text-[10px] font-bold uppercase tracking-widest text-slate-600"
-                                          style={{background: 'var(--bg-card)'}}>Or continue with</span>
-                                </div>
-                            </div>
+                                    {/* Hidden step-1 fields passed through */}
+                                    <input type="hidden" name="first_name"  value={form.first_name} />
+                                    <input type="hidden" name="last_name"   value={form.last_name} />
+                                    <input type="hidden" name="email"       value={form.email} />
+                                    <input type="hidden" name="password"    value={form.password} />
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <button className="glass-card flex items-center justify-center gap-2 py-3 rounded-xl hover:border-cyan-400/30 transition" style={{cursor: 'pointer'}}>
-                                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-4 h-4" alt="Google" />
-                                    <span className="text-xs font-bold text-slate-400">Google</span>
-                                </button>
-                                <button className="glass-card flex items-center justify-center gap-2 py-3 rounded-xl hover:border-cyan-400/30 transition" style={{cursor: 'pointer'}}>
-                                    <i className="fab fa-apple text-lg text-slate-400"></i>
-                                    <span className="text-xs font-bold text-slate-400">Apple</span>
-                                </button>
-                            </div>
+                                    {/* Phone */}
+                                    <Field label="Phone Number" icon="fa-phone" focused={focusedField === 'phone'}>
+                                        <input type="tel" name="phone" placeholder="+91 98765 43210" value={form.phone}
+                                               onChange={e => set('phone', e.target.value)}
+                                               onFocus={() => setFocusedField('phone')}
+                                               onBlur={() => setFocusedField(null)}
+                                               className={inputCls} />
+                                    </Field>
 
-                            <p className="text-center text-xs text-slate-600 mt-8">
-                                Already have an account? <a href="#" className="text-cyan-400 font-bold no-underline hover:underline">Sign In</a>
+                                    {/* Date of Birth */}
+                                    <Field label="Date of Birth" icon="fa-calendar-alt" focused={focusedField === 'date_of_birth'}>
+                                        <input type="date" name="date_of_birth" value={form.date_of_birth}
+                                               onChange={e => set('date_of_birth', e.target.value)}
+                                               onFocus={() => setFocusedField('date_of_birth')}
+                                               onBlur={() => setFocusedField(null)}
+                                               className={inputCls}
+                                               style={{colorScheme: 'dark'}} />
+                                    </Field>
+
+                                    {/* Gender + Blood Group row */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Gender</label>
+                                            <div className="relative mt-2">
+                                                <i className={`fas fa-venus-mars absolute left-4 top-1/2 -translate-y-1/2 text-sm transition pointer-events-none
+                                                               ${focusedField === 'gender' ? 'text-cyan-400' : 'text-slate-600'}`}></i>
+                                                <select name="gender" value={form.gender}
+                                                        onChange={e => set('gender', e.target.value)}
+                                                        onFocus={() => setFocusedField('gender')}
+                                                        onBlur={() => setFocusedField(null)}
+                                                        className={`${inputCls} appearance-none pr-8`}
+                                                        style={{cursor: 'pointer'}}>
+                                                    <option value="">Select</option>
+                                                    <option value="male">Male</option>
+                                                    <option value="female">Female</option>
+                                                    <option value="other">Other</option>
+                                                </select>
+                                                <i className="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-600 pointer-events-none"></i>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Blood Group</label>
+                                            <div className="relative mt-2">
+                                                <i className={`fas fa-tint absolute left-4 top-1/2 -translate-y-1/2 text-sm transition pointer-events-none
+                                                               ${focusedField === 'blood_group' ? 'text-cyan-400' : 'text-slate-600'}`}></i>
+                                                <select name="blood_group" value={form.blood_group}
+                                                        onChange={e => set('blood_group', e.target.value)}
+                                                        onFocus={() => setFocusedField('blood_group')}
+                                                        onBlur={() => setFocusedField(null)}
+                                                        className={`${inputCls} appearance-none pr-8`}
+                                                        style={{cursor: 'pointer'}}>
+                                                    <option value="">Select</option>
+                                                    {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(bg => (
+                                                        <option key={bg} value={bg}>{bg}</option>
+                                                    ))}
+                                                </select>
+                                                <i className="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-600 pointer-events-none"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Optional notice */}
+                                    <p className="text-[11px] text-slate-600 text-center pt-1">
+                                        <i className="fas fa-info-circle mr-1 text-slate-700"></i>
+                                        Phone, gender and blood group are optional but help personalise your care.
+                                    </p>
+
+                                    {/* Buttons */}
+                                    <div className="grid grid-cols-2 gap-3 pt-1">
+                                        <button type="button" onClick={() => setStep(1)}
+                                                className="py-3.5 rounded-2xl text-sm font-semibold text-slate-400 hover:text-slate-200 transition border-none cursor-pointer"
+                                                style={{background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)'}}>
+                                            <i className="fas fa-arrow-left mr-2"></i>Back
+                                        </button>
+                                        <button type="submit"
+                                                className="btn-primary py-3.5 rounded-2xl text-sm">
+                                            <i className="fas fa-check mr-2"></i>Create Account
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+
+                            <p className="text-center text-xs text-slate-600 mt-7">
+                                Already have an account?{' '}
+                                <a href={_URLS.login} className="text-cyan-400 font-bold no-underline hover:underline">Sign In</a>
                             </p>
+
                         </div>
                     </div>
                 </main>
@@ -124,8 +383,7 @@
         );
     }
 
-    const signupRoot = ReactDOM.createRoot(document.getElementById('signup-root'));
-    signupRoot.render(<SignupPage />);
+    ReactDOM.createRoot(document.getElementById('signup-root')).render(<SignupPage />);
     </script>
     {% endverbatim %}
 </body>

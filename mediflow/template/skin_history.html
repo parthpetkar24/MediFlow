@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Skin History{% endblock %}
+
+{% block body %}
+<div class="max-w-6xl mx-auto px-6 py-10">
+
+    <h1 class="text-3xl font-bold text-white mb-8">Skin History</h1>
+
+    <div class="space-y-4">
+        {% for item in records %}
+        <div class="p-5 rounded-2xl bg-white/5 border border-white/10">
+            <div class="flex justify-between items-center">
+                <h3 class="text-white font-semibold">{{ item.full_name }}</h3>
+                <span class="text-sm text-green-400">{{ item.confidence }}%</span>
+            </div>
+            <p class="text-sm text-slate-400">Risk: {{ item.risk_level }}</p>
+            <p class="text-xs text-slate-500 mt-1">{{ item.created_at }}</p>
+        </div>
+        {% empty %}
+        <p class="text-slate-400">No skin history available.</p>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

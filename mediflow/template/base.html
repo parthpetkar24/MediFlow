@@ -26,40 +26,83 @@
 
     <div id="navbar-root"></div>
 
-    <!-- Render Django URLs into JS before the verbatim block -->
     <script>
         var _URLS = {
-            index:   "{% url 'index' %}",
-            skin:    "{% url 'skin_disease_predictor' %}",
-            stress:  "{% url 'stress_analyser' %}",
-            disease: "{% url 'disease_predictor' %}",
-            tips:    "{% url 'health_tips' %}",
-            about:   "{% url 'about' %}",
-            signup:  "{% url 'signup' %}",
-            start:   "{% url 'get_started' %}",
+            index:           "{% url 'index' %}",
+            skin:            "{% url 'skin_disease_predictor' %}",
+            stress:          "{% url 'stress_analyser' %}",
+            disease:         "{% url 'disease_predictor' %}",
+            tips:            "{% url 'health_tips' %}",
+            about:           "{% url 'about' %}",
+            signup:          "{% url 'signup' %}",
+            login:           "{% url 'login' %}",
+            start:           "{% url 'get_started' %}",
+            historyOverview: "{% url 'history_overview' %}",
+            skinHistory:     "{% url 'skin_history' %}",
+            diseaseHistory:  "{% url 'disease_history' %}",
+            stressHistory:   "{% url 'stress_history' %}",
+            logout:          "{% url 'logout' %}",
+        };
+
+        var _USER = {
+            isAuthenticated: {% if request.user.is_authenticated %}true{% else %}false{% endif %},
+            name:     "{% if request.user.is_authenticated %}{{ request.user.first_name|default:request.user.email }}{% endif %}",
+            initials: "{% if request.user.is_authenticated %}{{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}{% endif %}",
         };
     </script>
 
     {% verbatim %}
     <script type="text/babel">
         function Navbar() {
-            const [mobileOpen, setMobileOpen] = React.useState(false);
+            const [mobileOpen,       setMobileOpen]       = React.useState(false);
+            const [userDropdown,     setUserDropdown]     = React.useState(false);
+            const [historyDropdown,  setHistoryDropdown]  = React.useState(false);
+            const [mobileHistory,    setMobileHistory]    = React.useState(false);
+
+            const userDropRef    = React.useRef(null);
+            const historyDropRef = React.useRef(null);
 
             const navLinks = [
-                { name: 'Dashboard',        url: _URLS.index   },
-                { name: 'Skin Detection',   url: _URLS.skin    },
-                { name: 'Stress Analyzer',  url: _URLS.stress  },
-                { name: 'Disease Predictor',url: _URLS.disease },
-                { name: 'Health Tips',      url: _URLS.tips    },
-                { name: 'About',            url: _URLS.about   },
+                { name: 'Dashboard',         url: _URLS.index   },
+                { name: 'Skin Detection',    url: _URLS.skin    },
+                { name: 'Stress Analyzer',   url: _URLS.stress  },
+                { name: 'Disease Predictor', url: _URLS.disease },
+                { name: 'Health Tips',       url: _URLS.tips    },
+                { name: 'About',             url: _URLS.about   },
+            ];
+
+            const historyLinks = [
+                { name: 'Overview',          url: _URLS.historyOverview, icon: 'fa-th-large',       color: '#06d6a0' },
+                { name: 'Skin History',      url: _URLS.skinHistory,     icon: 'fa-microscope',     color: '#38bdf8' },
+                { name: 'Disease History',   url: _URLS.diseaseHistory,  icon: 'fa-stethoscope',    color: '#818cf8' },
+                { name: 'Stress History',    url: _URLS.stressHistory,   icon: 'fa-brain',          color: '#fb923c' },
             ];
 
             const currentPath = window.location.pathname;
 
+            // Close dropdowns on outside click
+            React.useEffect(() => {
+                function handleClick(e) {
+                    if (userDropRef.current    && !userDropRef.current.contains(e.target))    setUserDropdown(false);
+                    if (historyDropRef.current && !historyDropRef.current.contains(e.target)) setHistoryDropdown(false);
+                }
+                document.addEventListener('mousedown', handleClick);
+                return () => document.removeEventListener('mousedown', handleClick);
+            }, []);
+
+            const dropdownStyle = {
+                background:     'rgba(10,13,24,0.98)',
+                border:         '1px solid rgba(255,255,255,0.07)',
+                backdropFilter: 'blur(24px)',
+                boxShadow:      '0 20px 60px rgba(0,0,0,0.5)',
+            };
+
             return (
                 <nav className="nav-glass sticky top-0 z-50">
                     <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
-                        <a href={_URLS.index} className="flex items-center gap-3 no-underline">
+
+                        {/* ── Logo ── */}
+                        <a href={_URLS.index} className="flex items-center gap-3 no-underline flex-shrink-0">
                             <div className="w-10 h-10 rounded-xl flex items-center justify-center"
                                  style={{background: 'linear-gradient(135deg, #06d6a0, #38bdf8)'}}>
                                 <i className="fas fa-heartbeat text-white text-lg"></i>
@@ -67,7 +110,8 @@
                             <span className="logo-text text-xl">MediFlow</span>
                         </a>
 
-                        <div className="hidden lg:flex items-center space-x-8">
+                        {/* ── Desktop Nav Links ── */}
+                        <div className="hidden lg:flex items-center space-x-6">
                             {navLinks.map((link, i) => (
                                 <a key={i} href={link.url}
                                    className={`nav-link ${currentPath === link.url ? 'active' : ''}`}>
@@ -76,17 +120,128 @@
                             ))}
                         </div>
 
-                        <div className="hidden lg:flex items-center gap-4">
-                            <a href={_URLS.signup} className="text-slate-400 hover:text-cyan-400 transition">
-                                <i className="fas fa-user-circle text-xl"></i>
-                            </a>
-                            <a href={_URLS.start}
-                               className="btn-primary text-sm py-2.5 px-6 rounded-xl no-underline inline-flex items-center gap-2">
-                                <span>Get Started</span>
-                                <i className="fas fa-arrow-right text-xs"></i>
-                            </a>
+                        {/* ── Desktop Right Section ── */}
+                        <div className="hidden lg:flex items-center gap-3">
+
+                            {_USER.isAuthenticated ? (
+                                <>
+                                    {/* ── History Dropdown ── */}
+                                    <div className="relative" ref={historyDropRef}>
+                                        <button
+                                            onClick={() => { setHistoryDropdown(!historyDropdown); setUserDropdown(false); }}
+                                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-slate-400 hover:text-cyan-400 transition bg-transparent border-none cursor-pointer"
+                                            style={{border: '1px solid rgba(255,255,255,0.07)'}}>
+                                            <i className="fas fa-history text-sm"></i>
+                                            <span>History</span>
+                                            <i className={`fas fa-chevron-down text-xs transition-transform ${historyDropdown ? 'rotate-180' : ''}`}></i>
+                                        </button>
+
+                                        {historyDropdown && (
+                                            <div className="absolute right-0 mt-3 w-56 rounded-2xl overflow-hidden"
+                                                 style={dropdownStyle}>
+                                                {/* Header */}
+                                                <div className="px-4 py-3 border-b" style={{borderColor: 'rgba(255,255,255,0.06)'}}>
+                                                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">My Health Records</p>
+                                                </div>
+                                                {/* Links */}
+                                                <div className="p-2">
+                                                    {historyLinks.map((item, i) => (
+                                                        <a key={i} href={item.url}
+                                                           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm no-underline transition group
+                                                                       ${currentPath === item.url ? 'text-cyan-400' : 'text-slate-400 hover:text-slate-100'}`}
+                                                           style={{background: currentPath === item.url ? 'rgba(6,214,160,0.08)' : 'transparent'}}
+                                                           onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.04)'}
+                                                           onMouseLeave={e => e.currentTarget.style.background = currentPath === item.url ? 'rgba(6,214,160,0.08)' : 'transparent'}>
+                                                            <span className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                                                                  style={{background: `${item.color}18`}}>
+                                                                <i className={`fas ${item.icon} text-xs`} style={{color: item.color}}></i>
+                                                            </span>
+                                                            <span className="font-medium">{item.name}</span>
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* ── User Dropdown ── */}
+                                    <div className="relative" ref={userDropRef}>
+                                        <button
+                                            onClick={() => { setUserDropdown(!userDropdown); setHistoryDropdown(false); }}
+                                            className="flex items-center gap-2.5 bg-transparent border-none cursor-pointer group p-1 rounded-xl transition"
+                                            style={{border: '1px solid rgba(255,255,255,0.07)'}}>
+                                            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white"
+                                                 style={{background: 'linear-gradient(135deg, #06d6a0, #38bdf8)'}}>
+                                                {_USER.initials || <i className="fas fa-user text-xs"></i>}
+                                            </div>
+                                            <span className="text-sm font-semibold text-slate-300 group-hover:text-cyan-400 transition pr-1">
+                                                {_USER.name}
+                                            </span>
+                                            <i className={`fas fa-chevron-down text-xs text-slate-500 pr-2 transition-transform ${userDropdown ? 'rotate-180' : ''}`}></i>
+                                        </button>
+
+                                        {userDropdown && (
+                                            <div className="absolute right-0 mt-3 w-52 rounded-2xl overflow-hidden"
+                                                 style={dropdownStyle}>
+                                                {/* User info header */}
+                                                <div className="px-4 py-4 border-b" style={{borderColor: 'rgba(255,255,255,0.06)'}}>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
+                                                             style={{background: 'linear-gradient(135deg, #06d6a0, #38bdf8)'}}>
+                                                            {_USER.initials || '?'}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-semibold text-slate-200 truncate">{_USER.name}</p>
+                                                            <p className="text-[10px] text-slate-500 uppercase tracking-wider font-bold mt-0.5">Active Member</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {/* Actions */}
+                                                <div className="p-2">
+                                                    <a href={_URLS.historyOverview}
+                                                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-400 hover:text-slate-100 no-underline transition"
+                                                       onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.04)'}
+                                                       onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+                                                        <span className="w-7 h-7 rounded-lg flex items-center justify-center" style={{background:'rgba(6,214,160,0.12)'}}>
+                                                            <i className="fas fa-chart-line text-xs" style={{color:'#06d6a0'}}></i>
+                                                        </span>
+                                                        <span>My History</span>
+                                                    </a>
+
+                                                    <div className="my-1.5 border-t" style={{borderColor:'rgba(255,255,255,0.06)'}}></div>
+
+                                                    <a href={_URLS.logout}
+                                                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-400 hover:text-red-400 no-underline transition"
+                                                       onMouseEnter={e => e.currentTarget.style.background='rgba(244,63,94,0.08)'}
+                                                       onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+                                                        <span className="w-7 h-7 rounded-lg flex items-center justify-center" style={{background:'rgba(244,63,94,0.12)'}}>
+                                                            <i className="fas fa-sign-out-alt text-xs text-red-400"></i>
+                                                        </span>
+                                                        <span>Logout</span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <a href={_URLS.login}
+                                       className="text-sm font-semibold text-slate-400 hover:text-cyan-400 transition no-underline flex items-center gap-2 px-4 py-2 rounded-xl"
+                                       style={{border: '1px solid rgba(255,255,255,0.07)'}}>
+                                        <i className="fas fa-sign-in-alt"></i>
+                                        <span>Sign In</span>
+                                    </a>
+                                    <a href={_URLS.start}
+                                       className="btn-primary text-sm py-2.5 px-6 rounded-xl no-underline inline-flex items-center gap-2">
+                                        <span>Get Started</span>
+                                        <i className="fas fa-arrow-right text-xs"></i>
+                                    </a>
+                                </>
+                            )}
                         </div>
 
+                        {/* ── Hamburger ── */}
                         <button
                             className={`lg:hidden hamburger bg-transparent border-none cursor-pointer p-2 ${mobileOpen ? 'active' : ''}`}
                             onClick={() => setMobileOpen(!mobileOpen)}>
@@ -94,20 +249,87 @@
                         </button>
                     </div>
 
+                    {/* ── Mobile Menu ── */}
                     <div className={`mobile-menu fixed inset-0 top-20 z-40 ${mobileOpen ? 'active' : ''}`}
-                         style={{background: 'rgba(6,8,15,0.97)', backdropFilter: 'blur(24px)'}}>
-                        <div className="flex flex-col items-center justify-center gap-6 pt-16">
+                         style={{background: 'rgba(6,8,15,0.97)', backdropFilter: 'blur(24px)', overflowY: 'auto'}}>
+                        <div className="flex flex-col items-center gap-5 pt-10 pb-16 px-6">
+
+                            {/* Nav links */}
                             {navLinks.map((link, i) => (
                                 <a key={i} href={link.url}
                                    className="text-xl font-semibold text-slate-300 hover:text-cyan-400 no-underline transition">
                                     {link.name}
                                 </a>
                             ))}
-                            <div className="mt-6 flex gap-4">
-                                <a href={_URLS.start} className="btn-primary py-3 px-8 rounded-xl no-underline">
-                                    <span>Get Started</span>
-                                </a>
-                            </div>
+
+                            {/* Divider */}
+                            <div className="w-full border-t my-2" style={{borderColor:'rgba(255,255,255,0.07)'}}></div>
+
+                            {_USER.isAuthenticated ? (
+                                <>
+                                    {/* Mobile User Card */}
+                                    <div className="w-full max-w-xs rounded-2xl p-4 flex items-center gap-4"
+                                         style={{background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.07)'}}>
+                                        <div className="w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
+                                             style={{background:'linear-gradient(135deg, #06d6a0, #38bdf8)'}}>
+                                            {_USER.initials || '?'}
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-slate-200">{_USER.name}</p>
+                                            <p className="text-xs text-slate-500 mt-0.5">Active Member</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Mobile History Accordion */}
+                                    <div className="w-full max-w-xs">
+                                        <button
+                                            onClick={() => setMobileHistory(!mobileHistory)}
+                                            className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-slate-300 bg-transparent border-none cursor-pointer"
+                                            style={{background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.07)'}}>
+                                            <div className="flex items-center gap-3">
+                                                <i className="fas fa-history text-cyan-400"></i>
+                                                <span className="font-semibold text-sm">My History</span>
+                                            </div>
+                                            <i className={`fas fa-chevron-down text-xs text-slate-500 transition-transform ${mobileHistory ? 'rotate-180' : ''}`}></i>
+                                        </button>
+
+                                        {mobileHistory && (
+                                            <div className="mt-2 rounded-xl overflow-hidden"
+                                                 style={{background:'rgba(255,255,255,0.02)', border:'1px solid rgba(255,255,255,0.05)'}}>
+                                                {historyLinks.map((item, i) => (
+                                                    <a key={i} href={item.url}
+                                                       className="flex items-center gap-3 px-4 py-3 text-sm text-slate-400 hover:text-slate-100 no-underline transition border-b last:border-0"
+                                                       style={{borderColor:'rgba(255,255,255,0.05)'}}>
+                                                        <span className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                                                              style={{background:`${item.color}18`}}>
+                                                            <i className={`fas ${item.icon} text-xs`} style={{color:item.color}}></i>
+                                                        </span>
+                                                        <span className="font-medium">{item.name}</span>
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Mobile Logout */}
+                                    <a href={_URLS.logout}
+                                       className="flex items-center gap-2 text-sm font-semibold text-red-400 hover:text-red-300 no-underline transition">
+                                        <i className="fas fa-sign-out-alt"></i>
+                                        <span>Logout</span>
+                                    </a>
+                                </>
+                            ) : (
+                                <>
+                                    <a href={_URLS.login}
+                                       className="text-lg font-semibold text-slate-400 hover:text-cyan-400 no-underline transition flex items-center gap-2">
+                                        <i className="fas fa-sign-in-alt"></i>
+                                        <span>Sign In</span>
+                                    </a>
+                                    <a href={_URLS.start} className="btn-primary py-3 px-8 rounded-xl no-underline">
+                                        <span>Get Started</span>
+                                    </a>
+                                </>
+                            )}
                         </div>
                     </div>
                 </nav>

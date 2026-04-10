@@ -14,6 +14,7 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 from urllib.parse import urlparse, parse_qsl
+from django.contrib.messages import constants as messages
 
 load_dotenv()
 
@@ -102,3 +103,16 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Avoids auto-field warnings
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+
+
+
+MESSAGE_TAGS = {
+    messages.DEBUG:   'debug',
+    messages.INFO:    'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',
+    messages.ERROR:   'error',
+}

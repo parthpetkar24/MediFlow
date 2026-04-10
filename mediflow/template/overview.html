@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}History Overview{% endblock %}
+
+{% block body %}
+<div class="max-w-7xl mx-auto px-6 py-10">
+
+    <h1 class="text-3xl font-bold text-white mb-8">History Overview</h1>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+
+        <div class="p-6 rounded-2xl bg-white/5 border border-white/10">
+            <p class="text-slate-400 text-sm">Skin Analyses</p>
+            <h2 class="text-3xl font-bold text-cyan-400">{{ skin_count }}</h2>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-white/5 border border-white/10">
+            <p class="text-slate-400 text-sm">Disease Predictions</p>
+            <h2 class="text-3xl font-bold text-indigo-400">{{ disease_count }}</h2>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-white/5 border border-white/10">
+            <p class="text-slate-400 text-sm">Stress Records</p>
+            <h2 class="text-3xl font-bold text-orange-400">{{ stress_count }}</h2>
+        </div>
+
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- Skin -->
+        <div class="bg-white/5 border border-white/10 p-5 rounded-2xl">
+            <h3 class="text-white font-semibold mb-3">Recent Skin</h3>
+            {% for item in recent_skin %}
+                <p class="text-slate-400 text-sm">
+                    {{ item.full_name }} ({{ item.confidence }}%)
+                </p>
+            {% empty %}
+                <p class="text-slate-500 text-sm">No records</p>
+            {% endfor %}
+        </div>
+
+        <!-- Disease -->
+        <div class="bg-white/5 border border-white/10 p-5 rounded-2xl">
+            <h3 class="text-white font-semibold mb-3">Recent Disease</h3>
+            {% for item in recent_disease %}
+                <p class="text-slate-400 text-sm">
+                    {{ item.predicted_disease }} ({{ item.confidence }}%)
+                </p>
+            {% empty %}
+                <p class="text-slate-500 text-sm">No records</p>
+            {% endfor %}
+        </div>
+
+        <!-- Stress -->
+        <div class="bg-white/5 border border-white/10 p-5 rounded-2xl">
+            <h3 class="text-white font-semibold mb-3">Recent Stress</h3>
+            {% for item in recent_stress %}
+                <p class="text-slate-400 text-sm">
+                    {{ item.label_display }} ({{ item.score }})
+                </p>
+            {% empty %}
+                <p class="text-slate-500 text-sm">No records</p>
+            {% endfor %}
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
