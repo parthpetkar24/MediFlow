@@ -10,7 +10,7 @@ function HomePage() {
     const [counters, setCounters] = React.useState({ accuracy: 0, users: 0, models: 0 });
 
     React.useEffect(() => {
-        const targets = { accuracy: 98, users: 100, models: 3 };
+        const targets = { accuracy: 98, models: 3 };
         const steps = 60; const duration = 2000;
         let step = 0;
         const timer = setInterval(() => {
@@ -68,10 +68,9 @@ function HomePage() {
                             <path d="M0 75 L60 75 L80 75 L90 30 L100 120 L110 55 L120 75 L200 75 L220 75 L230 25 L240 125 L250 50 L260 75 L400 75"
                                   fill="none" stroke="url(#ekg-grad)" strokeWidth="3" strokeLinecap="round"/>
                         </svg>
-                        <div className="grid grid-cols-3 gap-4 mt-8">
+                        <div className="grid grid-cols-2 gap-4 mt-8">
                             {[
                                 { val: `${counters.accuracy}%`, label: 'Accuracy'  },
-                                { val: `${counters.users}k+`,   label: 'Analyses'  },
                                 { val: `${counters.models}`,    label: 'AI Models' },
                             ].map((s, i) => (
                                 <div key={i} className="text-center p-3 rounded-xl" style={{background: 'rgba(255,255,255,0.04)'}}>
