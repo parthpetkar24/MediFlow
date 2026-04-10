@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Awareness Tips | MediFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-[#f1f7ff]">
+
+    <!-- NAVIGATION BAR -->
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-blue-100">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl font-bold text-blue-700">MediFlow</span>
+            </div>
+            <div class="hidden lg:flex space-x-8">
+                <a href="index.html" class="nav-link">Dashboard</a>
+                <a href="skin-detection.html" class="nav-link">Skin Detection</a>
+                <a href="stress-analyzer.html" class="nav-link">Stress Analyzer</a>
+                <a href="disease-predictor.html" class="nav-link">Disease Predictor</a>
+                <a href="health-tips.html" class="nav-link active font-bold text-blue-600 underline decoration-2 underline-offset-8">Health Tips</a>
+                <a href="about.html" class="nav-link">About</a>
+            </div>
+            <button class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold text-sm">Get Started</button>
+        </div>
+    </nav>
+
+    <!-- HEADER SECTION -->
+    <header class="max-w-7xl mx-auto pt-16 px-6 text-center">
+        <span class="bg-teal-100 text-teal-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-4 inline-block">Daily Wellness Guide</span>
+        <h1 class="text-5xl font-extrabold text-slate-900 mb-6">Preventative Knowledge</h1>
+        <p class="text-gray-500 max-w-2xl mx-auto mb-12">Small daily habits lead to long-term health clinical outcomes. Explore our curated insights for a balanced life.</p>
+        
+        <!-- CATEGORY FILTERS -->
+        <div class="flex flex-wrap justify-center gap-4 mb-16">
+            <button class="px-6 py-2 bg-blue-600 text-white rounded-full text-xs font-bold shadow-lg shadow-blue-100">All Tips</button>
+            <button class="px-6 py-2 bg-white text-slate-600 rounded-full text-xs font-bold border border-slate-100 hover:border-blue-400">Nutrition</button>
+            <button class="px-6 py-2 bg-white text-slate-600 rounded-full text-xs font-bold border border-slate-100 hover:border-blue-400">Mental Health</button>
+            <button class="px-6 py-2 bg-white text-slate-600 rounded-full text-xs font-bold border border-slate-100 hover:border-blue-400">Physical Activity</button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 pb-24">
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            <!-- TIP 1 -->
+            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-blue-50 hover:shadow-xl transition-all h-full flex flex-col">
+                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 text-xl">
+                    <i class="fas fa-droplet"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-3">Optimal Hydration</h3>
+                <p class="text-sm text-gray-400 mb-6 flex-grow">Drinking water helps maintain blood volume and supports kidney function. Aim for consistently clear urine as a hydration benchmark.</p>
+                <div class="pt-6 border-t border-slate-50 mt-auto">
+                    <span class="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Action Step</span>
+                    <p class="text-xs text-slate-900 font-bold mt-1">Drink 250ml water first thing in the morning.</p>
+                </div>
+            </div>
+
+            <!-- TIP 2 -->
+            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-blue-50 hover:shadow-xl transition-all h-full flex flex-col">
+                <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center mb-6 text-xl">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-3">Deep Work Sprints</h3>
+                <p class="text-sm text-gray-400 mb-6 flex-grow">Protect your mental energy by working in 90-minute blocks followed by a 15-minute screen-free break to reduce cortisol.</p>
+                <div class="pt-6 border-t border-slate-50 mt-auto">
+                    <span class="text-[10px] font-bold text-orange-600 uppercase tracking-widest">Mental Shield</span>
+                    <p class="text-xs text-slate-900 font-bold mt-1">Use the Pomodoro technique for daily tasks.</p>
+                </div>
+            </div>
+
+            <!-- TIP 3 -->
+            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-blue-50 hover:shadow-xl transition-all h-full flex flex-col">
+                <div class="w-12 h-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mb-6 text-xl">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-3">Post-Meal Walks</h3>
+                <p class="text-sm text-gray-400 mb-6 flex-grow">A light 10-minute walk after lunch can help stabilize blood sugar spikes and improve metabolic flexibility.</p>
+                <div class="pt-6 border-t border-slate-50 mt-auto">
+                    <span class="text-[10px] font-bold text-green-600 uppercase tracking-widest">Metabolic Boost</span>
+                    <p class="text-xs text-slate-900 font-bold mt-1">Take the stairs instead of the elevator today.</p>
+                </div>
+            </div>
+
+            <!-- TIP 4 -->
+            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-blue-50 hover:shadow-xl transition-all h-full flex flex-col">
+                <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 text-xl">
+                    <i class="fas fa-moon"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-3">Circadian Alignment</h3>
+                <p class="text-sm text-gray-400 mb-6 flex-grow">Try to view sunlight within 30 minutes of waking to set your internal clock for better sleep quality at night.</p>
+                <div class="pt-6 border-t border-slate-50 mt-auto">
+                    <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Sleep Hygiene</span>
+                    <p class="text-xs text-slate-900 font-bold mt-1">No blue light 1 hour before sleeping.</p>
+                </div>
+            </div>
+
+            <!-- TIP 5 -->
+            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-blue-50 hover:shadow-xl transition-all h-full flex flex-col">
+                <div class="w-12 h-12 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mb-6 text-xl">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-3">Salt Mindfulness</h3>
+                <p class="text-sm text-gray-400 mb-6 flex-grow">Reducing sodium intake by just 1,000mg per day can significantly lower blood pressure and protect heart health.</p>
+                <div class="pt-6 border-t border-slate-50 mt-auto">
+                    <span class="text-[10px] font-bold text-red-600 uppercase tracking-widest">Heart Guard</span>
+                    <p class="text-xs text-slate-900 font-bold mt-1">Use herbs/spices for flavor instead of salt.</p>
+                </div>
+            </div>
+
+            <!-- TIP 6 -->
+            <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-blue-50 hover:shadow-xl transition-all h-full flex flex-col">
+                <div class="w-12 h-12 bg-yellow-50 text-yellow-600 rounded-2xl flex items-center justify-center mb-6 text-xl">
+                    <i class="fas fa-sun"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-3">Vitamin D Synthesis</h3>
+                <p class="text-sm text-gray-400 mb-6 flex-grow">15 minutes of direct morning sunlight on your skin supports bone health and boosts your immune system's T-cells.</p>
+                <div class="pt-6 border-t border-slate-50 mt-auto">
+                    <span class="text-[10px] font-bold text-yellow-600 uppercase tracking-widest">Immune Shield</span>
+                    <p class="text-xs text-slate-900 font-bold mt-1">Spend your coffee break outdoors today.</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="max-w-7xl mx-auto px-6 py-12 border-t border-slate-200 flex flex-col md:flex-row justify-between items-start gap-10">
+        <div>
+            <h3 class="text-blue-700 font-bold mb-4">MediFlow AI Health</h3>
+            <p class="text-xs text-gray-400 max-w-sm leading-relaxed">
+                &copy; 2024 MediFlow AI Health. All rights reserved. Medical Disclaimer: This system provides AI-driven awareness and is not a substitute for professional medical advice.
+            </p>
+        </div>
+        <div class="grid grid-cols-2 gap-20">
+            <div>
+                <a href="#" class="block text-xs text-gray-400 mb-2 hover:text-blue-600">Privacy Policy</a>
+                <a href="#" class="block text-xs text-gray-400 hover:text-blue-600">Terms of Service</a>
+            </div>
+            <div>
+                <a href="#" class="block text-xs text-gray-400 mb-2 hover:text-blue-600">Contact Support</a>
+                <a href="#" class="block text-xs text-gray-400 hover:text-blue-600">Medical Data Safety</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
